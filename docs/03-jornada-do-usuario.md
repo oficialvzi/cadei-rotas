@@ -39,11 +39,11 @@ flowchart TD
     ListaReports --> ConfirmaReport[Confirma se<br/>barreira ainda existe]
     ConfirmaReport --> Mapa
 
-    style Start fill:#c8e6c9
-    style Fim fill:#c8e6c9
-    style Sucesso fill:#a5d6a7
-    style Rejeitado fill:#ffcc80
-    style ValidaIA fill:#e1bee7
+    style Start fill:#0E5FB5
+    style Fim fill:#0E5FB5
+    style Sucesso fill:#0F6E56
+    style Rejeitado fill:#D85A30
+    style ValidaIA fill:#534AB7
 ```
 
 ## Jornada Secundária: Cadastro e Primeiro Acesso
@@ -69,9 +69,9 @@ flowchart TD
     
     J --> Fim([Pronto para usar])
 
-    style A fill:#c8e6c9
-    style Fim fill:#c8e6c9
-    style M fill:#ffcdd2
+    style A fill:#0E5FB5
+    style Fim fill:#0E5FB5
+    style M fill:#A32D2D
 ```
 
 ## Jornada Secundária: Consulta de Pontos Acessíveis
@@ -90,8 +90,8 @@ flowchart TD
     F -->|Não| J[Ajusta filtros<br/>ou contribui<br/>cadastrando ponto]
     J --> E
 
-    style A fill:#c8e6c9
-    style Fim fill:#c8e6c9
+    style A fill:#0E5FB5
+    style Fim fill:#0E5FB5
 ```
 
 ## Princípios de Acessibilidade nas Jornadas

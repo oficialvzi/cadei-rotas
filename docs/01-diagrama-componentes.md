@@ -50,9 +50,9 @@ flowchart TB
     AI -->|consulta| GEMINI
     FUNCTIONS -->|atualiza status| FIRESTORE
 
-    style Cliente fill:#e3f2fd
-    style Firebase fill:#fff3e0
-    style Externos fill:#f3e5f5
+    style Cliente fill:#0E5FB5
+    style Firebase fill:#0F6E56
+    style Externos fill:#534AB7
 ```
 
 ## Descrição dos Componentes
