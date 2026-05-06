@@ -1,4 +1,4 @@
-# Documentação = Cadei-Rotas
+# Documentação - Cadei-Rotas
 Documentação técnica do **Projeto Cadei-Rotas** da disciplina **ENE0450 - Projeto Integrador de Fundamentos** da UnB, semestre 2026/1.
 
 ## Sobre o Projeto
