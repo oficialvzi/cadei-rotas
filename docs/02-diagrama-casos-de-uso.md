@@ -47,11 +47,11 @@ flowchart LR
 
     UC11 --> Gemini
 
-    style Sistema fill:#f5f5f5
-    style Visitante fill:#bbdefb
-    style Usuario fill:#c8e6c9
-    style Admin fill:#ffccbc
-    style Gemini fill:#e1bee7
+    style Sistema fill:#000000
+    style Visitante fill:#b93241
+    style Usuario fill:#0F6E56
+    style Admin fill:#009999
+    style Gemini fill:#534AB7
 ```
 
 ## Atores
