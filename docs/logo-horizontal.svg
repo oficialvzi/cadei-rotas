@@ -33,7 +33,7 @@
 
   <!-- Wordmark -->
   <text x="270" y="115" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="500" fill="#0E5FB5">Cadei</text>
-  <text x="396" y="115" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="500" fill="#1A1A1A">-</text>
+  <text x="396" y="115" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="500" fill="#bfbfbf">-</text>
   <text x="418" y="115" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="500" fill="#0F6E56">Rotas</text>
-  <text x="270" y="148" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#5F5E5A" letter-spacing="2">ACESSIBILIDADE EM ROTA</text>
+  <text x="278" y="148" font-family="system-ui, -apple-system, sans-serif" font-size="18" fill="#bfbfbf" letter-spacing="2">ACESSIBILIDADE EM ROTA</text>
 </svg>
