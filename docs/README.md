@@ -11,15 +11,14 @@ O Cadei-Rotas é um aplicativo mobile de acessibilidade utilizando um sistema de
 - **Inteligência Artificial:** Google Gemini via Firebase AI Logic
 
 ## Índice da Documentação
-| #   | Documento                                                 | Descrição                                             |
-| --- | --------------------------------------------------------- | ----------------------------------------------------- |
-| 01  | [Diagrama de Componentes](./01-diagrama-componentes.md)   | Visão estrutural do sistema e seus módulos            |
+| #   | Documento | Descrição|
+| --- | --------- | -------- |
+| 01  | [Diagrama de Componentes](./01-diagrama-componentes.md)   | Visão estrutural do sistema e seus módulos |
 | 02  | [Diagrama de Casos de Uso](./02-diagrama-casos-de-uso.md) | Funcionalidades disponíveis para cada tipo de usuário |
-| 03  | [Jornada do Usuário](./03-jornada-do-usuario.md)          | Fluxos de navegação concretos no aplicativo           |
-| 04  | [Diagrama de Sequência](./04-diagrama-sequencia.md)       | Ordem temporal das interações entre componentes       |
-| 05  | [Roadmap e Cronograma](./05-roadmap-cronograma.md)        | Planejamento das sprints e pontos de controle         |
-| 06  | [Paleta de Cores](./06-paleta-de-cores.md)                | Sistema de cores do app e dos diagramas               |
-| 07  | [Identidade Visual](./07-identidade-visual.md)            | Logo, conceito e regras de uso da marca               |
+| 03  | [Jornada do Usuário](./03-jornada-do-usuario.md)          | Fluxos de navegação concretos no aplicativo  |
+| 04  | [Diagrama de Sequência](./04-diagrama-sequencia.md)       | Ordem temporal das interações entre componentes |
+| 05  | [Roadmap e Cronograma](./05-roadmap-cronograma.md)        | Planejamento das sprints e pontos de controle |
+
 
 ## Como Visualizar os Diagramas
  
