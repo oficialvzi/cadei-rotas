@@ -1,0 +1,21 @@
+<svg width="380" height="160" viewBox="0 0 380 160" xmlns="http://www.w3.org/2000/svg">
+  <title>Logo Cadei-Rotas Monocromática</title>
+  <desc>Versão monocromática para impressões e contextos sem cor</desc>
+
+  <g transform="translate(25, 25)">
+    <path d="M 40 0 C 18 0, 0 18, 0 40 C 0 64, 20 88, 40 110 C 60 88, 80 64, 80 40 C 80 18, 62 0, 40 0 Z" fill="#1A1A1A"/>
+
+    <circle cx="40" cy="40" r="24" fill="#FFFFFF"/>
+    <circle cx="40" cy="40" r="24" fill="none" stroke="#1A1A1A" stroke-width="2.5"/>
+
+    <line x1="40" y1="20" x2="40" y2="60" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+    <line x1="20" y1="40" x2="60" y2="40" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+    <line x1="25" y1="25" x2="55" y2="55" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+    <line x1="55" y1="25" x2="25" y2="55" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+
+    <circle cx="40" cy="40" r="4" fill="#1A1A1A"/>
+  </g>
+
+  <text x="130" y="80" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="500" fill="#1A1A1A">Cadei-Rotas</text>
+  <text x="130" y="102" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#5F5E5A" letter-spacing="1.5">ACESSIBILIDADE EM ROTA</text>
+</svg>
