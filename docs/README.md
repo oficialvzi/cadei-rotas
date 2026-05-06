@@ -1,6 +1,11 @@
 # Documentação - Cadei-Rotas
 Documentação técnica do **Projeto Cadei-Rotas** da disciplina **ENE0450 - Projeto Integrador de Fundamentos** da UnB, semestre 2026/1.
 
+<p align="center">
+  <img src="/docs/logo-horizontal.svg" alt="Logo Cadei-Rotas">
+</p>
+
+
 ## Sobre o Projeto
 O Cadei-Rotas é um aplicativo mobile de acessibilidade utilizando um sistema de mapeamento georreferenciado limitado ao perímetro da UnB. A aplicação integra dados estáticos de infraestruturas acessíveis (rampas, elevadores) a uma interface colaborativa de crowdsourcing que permite aos usuários reportar barreiras arquitetônicas em tempo real, com validação automática de imagens via IA.
 
