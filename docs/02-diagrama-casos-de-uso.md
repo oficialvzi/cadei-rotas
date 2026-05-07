@@ -78,9 +78,3 @@ flowchart LR
 | UC9 | Gerenciar pontos acessíveis | Administrador |
 | UC10 | Moderar reports | Administrador |
 | UC11 | Validar imagem via IA | Gemini |
-
-## Relacionamentos
-
-- **UC5 inclui UC6:** todo report de barreira exige obrigatoriamente uma foto anexada.
-- **UC5 inclui UC11:** todo report passa por validação automática via IA antes de ser publicado.
-- **UC8 estende UC7:** a validação de reports é uma ação opcional executada a partir da visualização.

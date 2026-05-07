@@ -93,13 +93,3 @@ flowchart TD
     style A fill:#0E5FB5
     style Fim fill:#0E5FB5
 ```
-
-## Princípios de Acessibilidade nas Jornadas
-
-Como o público-alvo são pessoas com mobilidade reduzida, as jornadas foram desenhadas considerando:
-
-- **Mínimo de toques:** ações principais acessíveis em até 3 toques a partir do mapa.
-- **Captura automática de GPS:** evita digitação manual de localização.
-- **Compatibilidade com leitor de tela:** todas as telas seguem padrões de acessibilidade do Material Design.
-- **Áreas de toque amplas:** botões com tamanho mínimo de 48x48dp.
-- **Feedback visual e textual:** toda ação tem confirmação clara.

@@ -108,10 +108,3 @@ sequenceDiagram
     FS->>App: Novo ponto aprovado
     App->>App: Adiciona marcador dinamicamente
 ```
-
-## Observações Técnicas
-
-- **Numeração automática:** o `autonumber` adiciona números sequenciais às mensagens, facilitando a referência durante apresentações.
-- **Comunicação assíncrona:** o bloco `Note over CF,G` destaca que a validação por IA ocorre em background, sem bloquear a interface do usuário.
-- **Streams do Firestore:** as setas de retorno nos fluxos de validação representam atualizações em tempo real via WebSocket, característica nativa do Firestore.
-- **Notação `alt`:** representa caminhos alternativos baseados em condições (equivalente ao if/else).

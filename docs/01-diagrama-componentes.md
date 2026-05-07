@@ -2,13 +2,6 @@
 
 Este diagrama apresenta a visão estrutural do sistema, mostrando os componentes que compõem o aplicativo de acessibilidade para cadeirantes da FT, suas responsabilidades e como se comunicam entre si.
 
-## Stack Tecnológica
-
-- **Frontend:** Flutter (Dart)
-- **Backend:** Firebase (Backend as a Service)
-- **Mapas:** Google Maps via plugin `google_maps_flutter`
-- **IA de validação:** Google Gemini via Firebase AI Logic
-
 ## Diagrama
 
 ```mermaid
@@ -83,13 +76,3 @@ flowchart TB
 |---------|------------------|
 | Google Maps API | Fornecimento de tiles, geocoding e dados cartográficos |
 | Google Gemini | Análise visual das imagens dos reports via IA |
-
-## Fluxo de Dados Principal
-
-1. O usuário interage com a UI do app Flutter.
-2. Ações de autenticação são tratadas pelo Firebase Authentication.
-3. Reports gerados pelo usuário são enviados ao Firestore (dados) e ao Cloud Storage (imagens).
-4. Uploads no Storage disparam Cloud Functions automaticamente.
-5. As Functions enviam a imagem ao Gemini através do Firebase AI Logic.
-6. O resultado da análise atualiza o status do report no Firestore.
-7. O app recebe a atualização em tempo real via stream do Firestore.
