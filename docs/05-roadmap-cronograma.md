@@ -14,44 +14,57 @@ Este documento apresenta o planejamento temporal do projeto, dividido em sprints
 ## Gráfico Gantt
 
 ```mermaid
+---
+config:
+    gantt:
+        barHeight: 22
+        barGap: 8
+        topPadding: 60
+        leftPadding: 180
+        rightPadding: 250
+        sectionFontSize: 15
+        fontSize: 14
+        numberSectionStyles: 4
+---
 gantt
-    title Cronograma de Desenvolvimento - Projeto Acessibilidade FT
+    title Cronograma de Desenvolvimento - Cadei-Rotas
     dateFormat YYYY-MM-DD
     axisFormat %d/%m
-    
-    section Sprint 0 - Setup
-    Definição de problema e escopo       :done, s0a, 2026-03-09, 7d
-    Setup do repositório e ferramentas   :s0b, after s0a, 7d
-    Documentação PC1                     :crit, s0c, after s0b, 7d
-    
+    todayMarker off
+ 
+    section Sprint 0 - Documentação
+    Documentação inicial         :done, s0, 2026-05-06, 1d
+    PC1                          :milestone, crit, pc1, 2026-05-07, 1d
+ 
     section Sprint 1 - Fundação
-    Configuração Flutter + Firebase      :s1a, 2026-04-06, 7d
-    Telas de login e cadastro            :s1b, after s1a, 7d
-    
+    Setup Flutter + Firebase     :s1a, 2026-05-08, 7d
+    Login e cadastro           :s1b, after s1a, 7d
+ 
     section Sprint 2 - Mapa
-    Integração Google Maps no Flutter    :s2a, 2026-04-20, 7d
-    Modelagem do Firestore               :s2b, after s2a, 7d
-    
+    Integração Google Maps       :s2a, 2026-05-22, 7d
+    Modelagem do Firestore       :s2b, after s2a, 7d
+ 
     section Sprint 3 - Reports
-    Tela de criar report (foto+GPS)      :s3a, 2026-05-04, 7d
-    Upload para Cloud Storage            :s3b, after s3a, 7d
-    Documentação PC2                     :crit, s3c, after s3b, 7d
-    
+    Tela de report (foto + GPS)  :s3a, 2026-06-05, 7d
+    Upload Cloud Storage         :s3b, after s3a, 7d
+ 
     section Sprint 4 - IA
-    Cloud Function de validação          :s4a, 2026-05-25, 7d
-    Integração com Gemini                :s4b, after s4a, 7d
-    
+    Cloud Function de validação  :s4a, 2026-06-19, 7d
+    Integração com Gemini        :s4b, after s4a, 7d
+    PC2                          :milestone, crit, pc2, 2026-07-09, 1d
+ 
     section Sprint 5 - Comunidade
-    Sistema de validação por usuários    :s5a, 2026-06-08, 7d
-    Filtros e busca no mapa              :s5b, after s5a, 7d
-    
+    Validação colaborativa       :s5a, 2026-07-10, 7d
+    Filtros e busca              :s5b, after s5a, 7d
+ 
     section Sprint 6 - Polimento
-    Testes de integração                 :s6a, 2026-06-22, 7d
-    Acessibilidade da interface          :s6b, after s6a, 7d
-    
+    Testes de integração         :s6a, 2026-07-24, 7d
+    Acessibilidade da UI         :s6b, after s6a, 7d
+ 
     section Sprint 7 - Entrega
-    Vídeo demonstrativo e landing page   :s7a, 2026-07-06, 7d
-    Documentação final e PC3             :crit, s7b, after s7a, 7d
+    Vídeo e landing page         :s7a, 2026-08-07, 7d
+    Documentação final           :s7b, after s7a, 7d
+    PC3                          :milestone, crit, pc3, 2026-09-03, 1d
 ```
 
 ## Detalhamento das Sprints
