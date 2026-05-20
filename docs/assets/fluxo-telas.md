@@ -1,6 +1,6 @@
 # Fluxo de Navegação entre Telas
 
-Este documento apresenta dois diagramas de fluxo do aplicativo Cadei-Rotas: o fluxo geral de navegação entre todas as telas e o fluxo detalhado da ação principal (reportar uma barreira).
+Este documento apresenta dois diagramas de fluxo do aplicativo Cadei-Rotas: o fluxo geral de navegação entre as principais telas e o fluxo detalhado da ação principal (reportar uma barreira).
 
 ## Fluxo Geral entre Telas
 
@@ -93,7 +93,7 @@ flowchart TD
 | 🟠 Laranja (`#D85A30`) | Parcialmente inacessível — reportado pelo usuário |
 | 🔴 Vermelho (`#A32D2D`) | Totalmente inacessível — reportado pelo usuário |
 
-## Telas do Aplicativo
+## Principais Telas do Aplicativo
 
 | # | Tela | Descrição |
 |---|------|-----------|

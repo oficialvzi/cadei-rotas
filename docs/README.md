@@ -23,6 +23,7 @@ O Cadei-Rotas é um aplicativo mobile de acessibilidade utilizando um sistema de
 | 03  | [Jornada do Usuário](./03-jornada-do-usuario.md)          | Fluxos de navegação concretos no aplicativo  |
 | 04  | [Diagrama de Sequência](./04-diagrama-sequencia.md)       | Ordem temporal das interações entre componentes |
 | 05  | [Roadmap e Cronograma](./05-roadmap-cronograma.md)        | Planejamento das sprints e pontos de controle |
+| 05  | [Protótipo de Telas](./06-prototipo-telas.md)        | Protótipo das principais telas do app |
 
 
 ## Como Visualizar os Diagramas
