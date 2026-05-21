@@ -1,0 +1,358 @@
+<svg width="1240" height="700" viewBox="0 0 1240 700" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <title>Slides de Instrução - Cadei-Rotas</title>
+  <desc>Os 4 slides exibidos no primeiro acesso ao app</desc>
+
+  <defs>
+    <linearGradient id="welcomeBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E6F1FB"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fundo -->
+  <rect width="1240" height="700" fill="#F5F4EE"/>
+
+  <!-- Título -->
+  <text x="620" y="40" text-anchor="middle" font-size="24" font-weight="700" fill="#1A1A1A">Slides de Instrução — Primeiro Acesso</text>
+  <text x="620" y="62" text-anchor="middle" font-size="13" fill="#5F5E5A">Exibidos uma única vez quando o usuário abre o app pela primeira vez</text>
+
+  <!-- ========== SLIDE 1: BOAS-VINDAS ========== -->
+  <g transform="translate(30, 100)">
+    <text x="140" y="-12" text-anchor="middle" font-size="14" font-weight="600" fill="#1A1A1A">Slide 1 — Boas-vindas</text>
+
+    <rect x="0" y="10" width="280" height="580" rx="32" fill="#1A1A1A"/>
+    <rect x="10" y="20" width="260" height="560" rx="24" fill="url(#welcomeBg)"/>
+    <rect x="105" y="30" width="70" height="22" rx="11" fill="#1A1A1A"/>
+
+    <!-- Skip -->
+    <text x="245" y="85" text-anchor="end" font-size="13" fill="#5F5E5A">Pular</text>
+
+    <!-- Ilustração: logo grande do app -->
+    <g transform="translate(95, 110)">
+      <!-- Pin de localização -->
+      <path d="M 45 0 C 20 0, 0 20, 0 45 C 0 72, 22 100, 45 130 C 68 100, 90 72, 90 45 C 90 20, 70 0, 45 0 Z" fill="#0E5FB5"/>
+      <!-- Roda interna -->
+      <circle cx="45" cy="45" r="28" fill="#FFFFFF"/>
+      <circle cx="45" cy="45" r="28" fill="none" stroke="#0E5FB5" stroke-width="2.5"/>
+      <line x1="45" y1="22" x2="45" y2="68" stroke="#0E5FB5" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="22" y1="45" x2="68" y2="45" stroke="#0E5FB5" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="28" y1="28" x2="62" y2="62" stroke="#0E5FB5" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="62" y1="28" x2="28" y2="62" stroke="#0E5FB5" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="45" cy="45" r="5" fill="#0E5FB5"/>
+    </g>
+
+    <!-- Título -->
+    <text x="140" y="285" text-anchor="middle" font-size="24" font-weight="700" fill="#0E5FB5">Bem-vindo ao</text>
+    <text x="140" y="315" text-anchor="middle" font-size="24" font-weight="700" fill="#1A1A1A">Cadei-Rotas</text>
+
+    <!-- Descrição -->
+    <text x="140" y="360" text-anchor="middle" font-size="13" fill="#5F5E5A">Um app feito para</text>
+    <text x="140" y="378" text-anchor="middle" font-size="13" fill="#5F5E5A">tornar a UnB mais acessível</text>
+
+    <!-- Bullets de propósito -->
+    <g transform="translate(40, 400)">
+      <circle cx="10" cy="10" r="4" fill="#0E5FB5"/>
+      <text x="24" y="14" font-size="12" fill="#1A1A1A">Mapeie rampas e elevadores</text>
+
+      <circle cx="10" cy="36" r="4" fill="#D85A30"/>
+      <text x="24" y="40" font-size="12" fill="#1A1A1A">Reporte barreiras arquitetônicas</text>
+
+      <circle cx="10" cy="62" r="4" fill="#1D9E75"/>
+      <text x="24" y="66" font-size="12" fill="#1A1A1A">Ajude a comunidade UnB</text>
+    </g>
+
+    <!-- Dots indicator -->
+    <g transform="translate(115, 500)">
+      <circle cx="0" cy="0" r="5" fill="#0E5FB5"/>
+      <circle cx="18" cy="0" r="4" fill="#D3D1C7"/>
+      <circle cx="36" cy="0" r="4" fill="#D3D1C7"/>
+      <circle cx="54" cy="0" r="4" fill="#D3D1C7"/>
+    </g>
+
+    <!-- Botão próximo -->
+    <rect x="40" y="525" width="200" height="44" rx="22" fill="#0E5FB5"/>
+    <text x="140" y="553" text-anchor="middle" font-size="14" font-weight="600" fill="#FFFFFF">Próximo</text>
+  </g>
+
+  <!-- ========== SLIDE 2: CORES DOS PINS ========== -->
+  <g transform="translate(330, 100)">
+    <text x="140" y="-12" text-anchor="middle" font-size="14" font-weight="600" fill="#1A1A1A">Slide 2 — Cores dos pins</text>
+
+    <rect x="0" y="10" width="280" height="580" rx="32" fill="#1A1A1A"/>
+    <rect x="10" y="20" width="260" height="560" rx="24" fill="#FFFFFF"/>
+    <rect x="105" y="30" width="70" height="22" rx="11" fill="#1A1A1A"/>
+
+    <!-- Skip -->
+    <text x="245" y="85" text-anchor="end" font-size="13" fill="#5F5E5A">Pular</text>
+
+    <!-- Mini mapa com pins demonstrativos -->
+    <g transform="translate(50, 105)">
+      <rect width="180" height="140" rx="12" fill="#DCE4D2"/>
+      <!-- Vias diagonais -->
+      <path d="M 0 30 L 180 15 L 180 22 L 0 38 Z" fill="#EBE7DB"/>
+      <path d="M 0 70 L 180 55 L 180 62 L 0 78 Z" fill="#EBE7DB"/>
+      <!-- Blocos -->
+      <rect x="60" y="42" width="20" height="14" fill="#D4B98C" stroke="#A89870" stroke-width="0.4"/>
+      <rect x="90" y="44" width="22" height="12" fill="#D4B98C" stroke="#A89870" stroke-width="0.4"/>
+      <rect x="55" y="82" width="22" height="14" fill="#D4B98C" stroke="#A89870" stroke-width="0.4"/>
+      <rect x="90" y="84" width="20" height="14" fill="#D4D2C8" stroke="#A8A698" stroke-width="0.4"/>
+      <rect x="125" y="86" width="22" height="14" fill="#D4B98C" stroke="#A89870" stroke-width="0.4"/>
+      <!-- Vegetação -->
+      <circle cx="25" cy="55" r="4" fill="#BCD0A8" opacity="0.7"/>
+      <circle cx="155" cy="40" r="4" fill="#BCD0A8" opacity="0.7"/>
+      <circle cx="35" cy="100" r="4" fill="#BCD0A8" opacity="0.7"/>
+      <circle cx="160" cy="115" r="4" fill="#BCD0A8" opacity="0.7"/>
+
+      <!-- Pin Azul -->
+      <g transform="translate(58, 30)">
+        <path d="M 11 0 C 5 0, 0 5, 0 11 C 0 18, 6 26, 11 34 C 16 26, 22 18, 22 11 C 22 5, 17 0, 11 0 Z" fill="#0E5FB5" stroke="#FFFFFF" stroke-width="1.5"/>
+        <circle cx="11" cy="11" r="5" fill="#FFFFFF"/>
+      </g>
+      <!-- Pin Laranja -->
+      <g transform="translate(95, 70)">
+        <path d="M 11 0 C 5 0, 0 5, 0 11 C 0 18, 6 26, 11 34 C 16 26, 22 18, 22 11 C 22 5, 17 0, 11 0 Z" fill="#D85A30" stroke="#FFFFFF" stroke-width="1.5"/>
+        <circle cx="11" cy="11" r="5" fill="#FFFFFF"/>
+      </g>
+      <!-- Pin Vermelho -->
+      <g transform="translate(130, 105)">
+        <path d="M 11 0 C 5 0, 0 5, 0 11 C 0 18, 6 26, 11 34 C 16 26, 22 18, 22 11 C 22 5, 17 0, 11 0 Z" fill="#A32D2D" stroke="#FFFFFF" stroke-width="1.5"/>
+        <circle cx="11" cy="11" r="5" fill="#FFFFFF"/>
+      </g>
+    </g>
+
+    <!-- Título -->
+    <text x="140" y="280" text-anchor="middle" font-size="20" font-weight="700" fill="#1A1A1A">Cores dos pins</text>
+    <text x="140" y="300" text-anchor="middle" font-size="12" fill="#5F5E5A">Veja a acessibilidade em um piscar</text>
+
+    <!-- Cards de legenda -->
+    <g transform="translate(30, 315)">
+      <!-- Azul -->
+      <rect width="220" height="48" rx="10" fill="#E6F1FB"/>
+      <g transform="translate(12, 9)">
+        <path d="M 11 0 C 5 0, 0 5, 0 11 C 0 18, 6 26, 11 34 C 16 26, 22 18, 22 11 C 22 5, 17 0, 11 0 Z" fill="#0E5FB5"/>
+        <circle cx="11" cy="11" r="5" fill="#FFFFFF"/>
+      </g>
+      <text x="46" y="22" font-size="13" font-weight="600" fill="#1A1A1A">Acessível</text>
+      <text x="46" y="38" font-size="11" fill="#5F5E5A">Rampa, elevador, banheiro PCD</text>
+
+      <!-- Laranja -->
+      <rect y="58" width="220" height="48" rx="10" fill="#FAECE7"/>
+      <g transform="translate(12, 67)">
+        <path d="M 11 0 C 5 0, 0 5, 0 11 C 0 18, 6 26, 11 34 C 16 26, 22 18, 22 11 C 22 5, 17 0, 11 0 Z" fill="#D85A30"/>
+        <circle cx="11" cy="11" r="5" fill="#FFFFFF"/>
+      </g>
+      <text x="46" y="80" font-size="13" font-weight="600" fill="#1A1A1A">Parcialmente inacessível</text>
+      <text x="46" y="96" font-size="11" fill="#5F5E5A">Passa, mas com dificuldade</text>
+
+      <!-- Vermelho -->
+      <rect y="116" width="220" height="48" rx="10" fill="#FCEBEB"/>
+      <g transform="translate(12, 125)">
+        <path d="M 11 0 C 5 0, 0 5, 0 11 C 0 18, 6 26, 11 34 C 16 26, 22 18, 22 11 C 22 5, 17 0, 11 0 Z" fill="#A32D2D"/>
+        <circle cx="11" cy="11" r="5" fill="#FFFFFF"/>
+      </g>
+      <text x="46" y="138" font-size="13" font-weight="600" fill="#1A1A1A">Totalmente inacessível</text>
+      <text x="46" y="154" font-size="11" fill="#5F5E5A">Passagem bloqueada</text>
+    </g>
+
+    <!-- Dots -->
+    <g transform="translate(110, 502)">
+      <circle cx="0" cy="0" r="4" fill="#D3D1C7"/>
+      <circle cx="18" cy="0" r="5" fill="#0E5FB5"/>
+      <circle cx="36" cy="0" r="4" fill="#D3D1C7"/>
+      <circle cx="54" cy="0" r="4" fill="#D3D1C7"/>
+    </g>
+
+    <!-- Botão -->
+    <rect x="40" y="525" width="200" height="44" rx="22" fill="#0E5FB5"/>
+    <text x="140" y="553" text-anchor="middle" font-size="14" font-weight="600" fill="#FFFFFF">Próximo</text>
+  </g>
+
+  <!-- ========== SLIDE 3: COMO REPORTAR ========== -->
+  <g transform="translate(630, 100)">
+    <text x="140" y="-12" text-anchor="middle" font-size="14" font-weight="600" fill="#1A1A1A">Slide 3 — Como reportar</text>
+
+    <rect x="0" y="10" width="280" height="580" rx="32" fill="#1A1A1A"/>
+    <rect x="10" y="20" width="260" height="560" rx="24" fill="#FFFFFF"/>
+    <rect x="105" y="30" width="70" height="22" rx="11" fill="#1A1A1A"/>
+
+    <!-- Skip -->
+    <text x="245" y="85" text-anchor="end" font-size="13" fill="#5F5E5A">Pular</text>
+
+    <!-- Ilustração: telefone com FAB destacado -->
+    <g transform="translate(75, 95)">
+      <!-- Mini-tela do app -->
+      <rect width="130" height="180" rx="14" fill="#DCE4D2" stroke="#D3D1C7" stroke-width="1"/>
+      <!-- Vias -->
+      <path d="M 0 50 L 130 38 L 130 44 L 0 56 Z" fill="#EBE7DB"/>
+      <!-- Blocos -->
+      <rect x="40" y="65" width="22" height="14" fill="#D4B98C" stroke="#A89870" stroke-width="0.3"/>
+      <rect x="70" y="68" width="22" height="14" fill="#D4B98C" stroke="#A89870" stroke-width="0.3"/>
+      <rect x="50" y="95" width="22" height="14" fill="#D4D2C8" stroke="#A8A698" stroke-width="0.3"/>
+      <rect x="85" y="100" width="22" height="14" fill="#D4B98C" stroke="#A89870" stroke-width="0.3"/>
+      <!-- Pins existentes -->
+      <g transform="translate(48, 53)">
+        <path d="M 8 0 C 3 0, 0 3, 0 8 C 0 14, 4 20, 8 26 C 12 20, 16 14, 16 8 C 16 3, 13 0, 8 0 Z" fill="#0E5FB5" stroke="#FFFFFF" stroke-width="1"/>
+      </g>
+      <g transform="translate(88, 86)">
+        <path d="M 8 0 C 3 0, 0 3, 0 8 C 0 14, 4 20, 8 26 C 12 20, 16 14, 16 8 C 16 3, 13 0, 8 0 Z" fill="#D85A30" stroke="#FFFFFF" stroke-width="1"/>
+      </g>
+      <!-- Localização do usuário -->
+      <circle cx="70" cy="120" r="6" fill="#378ADD" opacity="0.25"/>
+      <circle cx="70" cy="120" r="3" fill="#378ADD" stroke="#FFFFFF" stroke-width="1"/>
+
+      <!-- FAB destacado com seta -->
+      <g transform="translate(95, 145)">
+        <circle r="18" fill="#D85A30" opacity="0.3"/>
+        <circle r="14" fill="#D85A30"/>
+        <line x1="0" y1="-7" x2="0" y2="7" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="-7" y1="0" x2="7" y2="0" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <!-- Seta apontando para o FAB -->
+      <path d="M 130 140 Q 145 130, 130 145" fill="none" stroke="#D85A30" stroke-width="2" stroke-linecap="round"/>
+      <polygon points="135,148 122,148 128,142" fill="#D85A30"/>
+    </g>
+
+    <!-- Título -->
+    <text x="140" y="305" text-anchor="middle" font-size="20" font-weight="700" fill="#1A1A1A">Encontrou um obstáculo?</text>
+    <text x="140" y="325" text-anchor="middle" font-size="13" fill="#5F5E5A">Reporte em 4 passos simples</text>
+
+    <!-- Passos -->
+    <g transform="translate(30, 340)">
+      <!-- Passo 1 -->
+      <circle cx="14" cy="14" r="12" fill="#0E5FB5"/>
+      <text x="14" y="19" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">1</text>
+      <text x="38" y="14" font-size="12" font-weight="600" fill="#1A1A1A">Toque no botão laranja</text>
+      <text x="38" y="28" font-size="10" fill="#5F5E5A">no canto inferior da tela</text>
+
+      <!-- Passo 2 -->
+      <circle cx="14" cy="54" r="12" fill="#0E5FB5"/>
+      <text x="14" y="59" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">2</text>
+      <text x="38" y="54" font-size="12" font-weight="600" fill="#1A1A1A">Escolha a severidade</text>
+      <text x="38" y="68" font-size="10" fill="#5F5E5A">parcial ou total</text>
+
+      <!-- Passo 3 -->
+      <circle cx="14" cy="94" r="12" fill="#0E5FB5"/>
+      <text x="14" y="99" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">3</text>
+      <text x="38" y="94" font-size="12" font-weight="600" fill="#1A1A1A">Adicione título e foto</text>
+      <text x="38" y="108" font-size="10" fill="#5F5E5A">câmera ou galeria</text>
+
+      <!-- Passo 4 -->
+      <circle cx="14" cy="134" r="12" fill="#0E5FB5"/>
+      <text x="14" y="139" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">4</text>
+      <text x="38" y="134" font-size="12" font-weight="600" fill="#1A1A1A">Marque no mapa</text>
+      <text x="38" y="148" font-size="10" fill="#5F5E5A">com um único toque</text>
+    </g>
+
+    <!-- Dots -->
+    <g transform="translate(110, 505)">
+      <circle cx="0" cy="0" r="4" fill="#D3D1C7"/>
+      <circle cx="18" cy="0" r="4" fill="#D3D1C7"/>
+      <circle cx="36" cy="0" r="5" fill="#0E5FB5"/>
+      <circle cx="54" cy="0" r="4" fill="#D3D1C7"/>
+    </g>
+
+    <!-- Botão -->
+    <rect x="40" y="525" width="200" height="44" rx="22" fill="#0E5FB5"/>
+    <text x="140" y="553" text-anchor="middle" font-size="14" font-weight="600" fill="#FFFFFF">Próximo</text>
+  </g>
+
+  <!-- ========== SLIDE 4: COMUNIDADE ========== -->
+  <g transform="translate(930, 100)">
+    <text x="140" y="-12" text-anchor="middle" font-size="14" font-weight="600" fill="#1A1A1A">Slide 4 — Comunidade</text>
+
+    <rect x="0" y="10" width="280" height="580" rx="32" fill="#1A1A1A"/>
+    <rect x="10" y="20" width="260" height="560" rx="24" fill="#FFFFFF"/>
+    <rect x="105" y="30" width="70" height="22" rx="11" fill="#1A1A1A"/>
+
+    <!-- Ilustração: pessoas conectadas / contribuição -->
+    <g transform="translate(60, 110)">
+      <!-- Círculo central com pin -->
+      <circle cx="80" cy="80" r="50" fill="#E1F5EE"/>
+      <circle cx="80" cy="80" r="50" fill="none" stroke="#1D9E75" stroke-width="2"/>
+
+      <!-- Pin central -->
+      <g transform="translate(63, 55)">
+        <path d="M 17 0 C 7 0, 0 7, 0 17 C 0 27, 8 40, 17 52 C 26 40, 34 27, 34 17 C 34 7, 27 0, 17 0 Z" fill="#0F6E56"/>
+        <circle cx="17" cy="17" r="8" fill="#FFFFFF"/>
+        <!-- Ícone check dentro do pin -->
+        <path d="M 12 17 L 15 20 L 22 13" fill="none" stroke="#0F6E56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+
+      <!-- Avatares ao redor -->
+      <g transform="translate(0, 0)">
+        <circle cx="15" cy="40" r="14" fill="#0E5FB5"/>
+        <circle cx="15" cy="36" r="5" fill="#FFFFFF"/>
+        <path d="M 6 50 Q 6 44, 15 44 Q 24 44, 24 50 Z" fill="#FFFFFF"/>
+      </g>
+      <g transform="translate(0, 0)">
+        <circle cx="145" cy="40" r="14" fill="#D85A30"/>
+        <circle cx="145" cy="36" r="5" fill="#FFFFFF"/>
+        <path d="M 136 50 Q 136 44, 145 44 Q 154 44, 154 50 Z" fill="#FFFFFF"/>
+      </g>
+      <g transform="translate(0, 0)">
+        <circle cx="15" cy="125" r="14" fill="#534AB7"/>
+        <circle cx="15" cy="121" r="5" fill="#FFFFFF"/>
+        <path d="M 6 135 Q 6 129, 15 129 Q 24 129, 24 135 Z" fill="#FFFFFF"/>
+      </g>
+      <g transform="translate(0, 0)">
+        <circle cx="145" cy="125" r="14" fill="#0F6E56"/>
+        <circle cx="145" cy="121" r="5" fill="#FFFFFF"/>
+        <path d="M 136 135 Q 136 129, 145 129 Q 154 129, 154 135 Z" fill="#FFFFFF"/>
+      </g>
+
+      <!-- Linhas conectando -->
+      <line x1="28" y1="46" x2="50" y2="65" stroke="#0F6E56" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5"/>
+      <line x1="132" y1="46" x2="110" y2="65" stroke="#0F6E56" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5"/>
+      <line x1="28" y1="115" x2="50" y2="95" stroke="#0F6E56" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5"/>
+      <line x1="132" y1="115" x2="110" y2="95" stroke="#0F6E56" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.5"/>
+    </g>
+
+    <!-- Título -->
+    <text x="140" y="290" text-anchor="middle" font-size="20" font-weight="700" fill="#1A1A1A">Juntos somos mais fortes</text>
+    <text x="140" y="312" text-anchor="middle" font-size="12" fill="#5F5E5A">Sua contribuição transforma o campus</text>
+
+    <!-- Cards de ações -->
+    <g transform="translate(30, 335)">
+      <!-- Confirmar -->
+      <rect width="220" height="42" rx="10" fill="#E1F5EE"/>
+      <g transform="translate(14, 14)">
+        <circle r="8" fill="#1D9E75"/>
+        <path d="M -4 0 L -1 3 L 4 -3" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <text x="36" y="20" font-size="12" font-weight="600" fill="#1A1A1A">Confirme reports válidos</text>
+      <text x="36" y="34" font-size="10" fill="#5F5E5A">A barreira ainda existe?</text>
+
+      <!-- Contestar -->
+      <rect y="52" width="220" height="42" rx="10" fill="#FAEEDA"/>
+      <g transform="translate(14, 66)">
+        <circle r="8" fill="#BA7517"/>
+        <line x1="-4" y1="-4" x2="4" y2="4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+        <line x1="4" y1="-4" x2="-4" y2="4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+      </g>
+      <text x="36" y="72" font-size="12" font-weight="600" fill="#1A1A1A">Conteste se já foi resolvido</text>
+      <text x="36" y="86" font-size="10" fill="#5F5E5A">A passagem está livre agora?</text>
+
+      <!-- IA -->
+      <rect y="104" width="220" height="42" rx="10" fill="#EEEDFE"/>
+      <g transform="translate(14, 118)">
+        <circle r="8" fill="#534AB7"/>
+        <text y="3" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">AI</text>
+      </g>
+      <text x="36" y="124" font-size="12" font-weight="600" fill="#1A1A1A">Validação automática</text>
+      <text x="36" y="138" font-size="10" fill="#5F5E5A">IA verifica cada foto enviada</text>
+    </g>
+
+    <!-- Dots -->
+    <g transform="translate(110, 502)">
+      <circle cx="0" cy="0" r="4" fill="#D3D1C7"/>
+      <circle cx="18" cy="0" r="4" fill="#D3D1C7"/>
+      <circle cx="36" cy="0" r="4" fill="#D3D1C7"/>
+      <circle cx="54" cy="0" r="5" fill="#0E5FB5"/>
+    </g>
+
+    <!-- Botão final (diferente: Começar) -->
+    <rect x="40" y="525" width="200" height="44" rx="22" fill="#1D9E75"/>
+    <text x="140" y="553" text-anchor="middle" font-size="14" font-weight="600" fill="#FFFFFF">Começar</text>
+  </g>
+
+</svg>
