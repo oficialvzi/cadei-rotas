@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart' hide Firebase;
+import 'firebase_options.dart';
 // Importa o arquivo splash.dart que está localizado dentro da pasta screens
 import 'screens/splash.dart';
 
