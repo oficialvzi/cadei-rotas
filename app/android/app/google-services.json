@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "837512954782",
+    "project_id": "cadei-rotas-be72b",
+    "storage_bucket": "cadei-rotas-be72b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:837512954782:android:e94fb70ba88fea17a84c8f",
+        "android_client_info": {
+          "package_name": "com.example.cadeirotas_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAw7jKpObFpQ6Gb6hKk47cSpqBXQVCANPw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
