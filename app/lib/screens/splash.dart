@@ -2,25 +2,26 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-void main() {
-  runApp(const CadeiRotasApp());
-}
+// Remova o main() e CadeiRotasApp daqui — eles ficam só no main.dart
 
-class CadeiRotasApp extends StatelessWidget {
-  const CadeiRotasApp({super.key});
+class SplashScreen extends StatefulWidget {  // ← muda para StatefulWidget
+  const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Cadei-Rotas',
-      home: SplashScreen(),
-    );
-  }
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({super.key});
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Aguarda 3 segundos e navega para login, sem permitir voltar para a splash
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,21 +29,20 @@ class SplashScreen extends StatelessWidget {
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
-          gradient: LinearGradient( // gradiente
+          gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF0E5FB5), // Azul Rota
-              Color(0xFF0C447C), // Azul Profundo
+              Color(0xFF0E5FB5),
+              Color(0xFF0C447C),
             ],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              const Spacer (flex: 3),
-
-              SvgPicture.asset( // icone do meio
+              const Spacer(flex: 3),
+              SvgPicture.asset(
                 'assets/images/logo-icone.svg',
                 height: 200,
               ),
@@ -65,13 +65,9 @@ class SplashScreen extends StatelessWidget {
                   color: Colors.white70,
                 ),
               ),
-
-              const Spacer (flex: 2),
-
+              const Spacer(flex: 2),
               const AnimatedThreeDots(),
-
               const SizedBox(height: 12),
-
               const Text(
                 'Carregando...',
                 style: TextStyle(
@@ -81,7 +77,7 @@ class SplashScreen extends StatelessWidget {
                   color: Colors.white70,
                 ),
               ),
-              const SizedBox (height: 32),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -90,8 +86,7 @@ class SplashScreen extends StatelessWidget {
   }
 }
 
-// --- COMPONENTE DA ANIMAÇÃO DOS TRÊS PONTINHOS ---
-// Usamos um StatefulWidget porque cascatas de animação guardam "estado" de tempo
+// --- COMPONENTE DA ANIMAÇÃO DOS TRÊS PONTINHOS --- (sem alterações)
 class AnimatedThreeDots extends StatefulWidget {
   const AnimatedThreeDots({super.key});
 
@@ -99,13 +94,13 @@ class AnimatedThreeDots extends StatefulWidget {
   State<AnimatedThreeDots> createState() => _AnimatedThreeDotsState();
 }
 
-class _AnimatedThreeDotsState extends State<AnimatedThreeDots> with SingleTickerProviderStateMixin {
+class _AnimatedThreeDotsState extends State<AnimatedThreeDots>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    // Configura a animação para durar 1.2 segundos e rodar continuamente (repeat)
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -114,37 +109,31 @@ class _AnimatedThreeDotsState extends State<AnimatedThreeDots> with SingleTicker
 
   @override
   void dispose() {
-    _controller.dispose(); // Boa prática: descarta o controlador ao fechar a tela para poupar memória
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min, // Mantém os pontos centralizados horizontalmente
+      mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (index) {
-        // O AnimatedBuilder reconstrói apenas os pontinhos a cada frame da animação
         return AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
-            // Criamos um atraso (delay) para cada bolinha com base no seu índice (0, 1 ou 2)
-            // É isso que faz uma bolinha subir depois da outra em efeito de onda
             final double delay = index * 0.4;
-            final double radians = (_controller.value * 2 * math.pi) - delay;
-
-            // Usamos a função seno (math.sin) para fazer um movimento suave de subida e descida
-            // O número -6.0 determina a altura que as bolinhas vão subir (6 pixels)
+            final double radians =
+                (_controller.value * 2 * math.pi) - delay;
             final double yOffset = math.sin(radians) * -6.0;
-
             return Transform.translate(
-              offset: Offset(0, yOffset), // Move a bolinha no eixo Y (vertical)
+              offset: Offset(0, yOffset),
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4), // Espaço entre as bolinhas
+                margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: 7,
                 height: 7,
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  shape: BoxShape.circle, // Transforma o container em um círculo perfeito
+                  shape: BoxShape.circle,
                 ),
               ),
             );
