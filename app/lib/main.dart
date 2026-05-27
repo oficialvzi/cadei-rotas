@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-// Importa o arquivo splash.dart que está localizado dentro da pasta screens
+import 'screens/login.dart';
+import 'screens/report_screen.dart';
 import 'screens/splash.dart';
+import 'screens/user_profile.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
   runApp(const CadeiRotasApp());
 }
 
@@ -18,11 +19,17 @@ class CadeiRotasApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Cadei-Rotas',
-      // Define a SplashScreen como a tela inicial do aplicativo
-      home: SplashScreen(),
+      initialRoute: '/splash',
+      routes: {
+        '/login':    (_) => const LoginScreen(),
+        '/cadastro': (_) => const CadastroScreen(),
+        '/splash':   (_) => const SplashScreen(),
+        '/report':   (_) => const ReportScreen(),
+        '/profile':  (_) => const TelaDePerfil(),
+      },
     );
   }
 }
