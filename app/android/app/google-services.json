@@ -12,7 +12,20 @@
           "package_name": "com.example.cadeirotas_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "837512954782-p4p16q2o6teqihvbvkf373rkc3tnuhtd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cadeirotas_app",
+            "certificate_hash": "08c856bab04f089a193c40ee566ef79093073db7"
+          }
+        },
+        {
+          "client_id": "837512954782-lvoj9rpmaq1ujebj3984fu7cr7spopuq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAw7jKpObFpQ6Gb6hKk47cSpqBXQVCANPw"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "837512954782-lvoj9rpmaq1ujebj3984fu7cr7spopuq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "837512954782-ahbpnetbqavfr1kjks8frit0ug0hgghd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.cadeirotasApp"
+              }
+            }
+          ]
         }
       }
     }

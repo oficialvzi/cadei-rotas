@@ -64,8 +64,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '837512954782',
     projectId: 'cadei-rotas-be72b',
     storageBucket: 'cadei-rotas-be72b.firebasestorage.app',
+    androidClientId: '837512954782-p4p16q2o6teqihvbvkf373rkc3tnuhtd.apps.googleusercontent.com',
+    iosClientId: '837512954782-ahbpnetbqavfr1kjks8frit0ug0hgghd.apps.googleusercontent.com',
     iosBundleId: 'com.example.cadeirotasApp',
   );
 
 }
-
