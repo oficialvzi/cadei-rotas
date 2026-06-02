@@ -149,7 +149,7 @@ class TelaDePerfil extends StatelessWidget {
                 ),
                 title: const Text('Notificações', style: TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: const Text('Reports próximos'),
-                trailing: Switch(value: true, activeColor: Colors.green, onChanged: (bool valor) {}),
+                trailing: Switch(value: true, activeThumbColor: Colors.green, onChanged: (bool valor) {}),
               ),
             ),
           ),

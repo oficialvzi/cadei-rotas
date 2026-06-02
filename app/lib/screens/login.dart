@@ -415,7 +415,7 @@ class _Logo extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: kAzul.withOpacity(0.35),
+                color: kAzul.withValues(alpha: 0.35),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -462,12 +462,12 @@ class _Card extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: kAzul.withOpacity(0.08),
+            color: kAzul.withValues(alpha: 0.08),
             blurRadius: 30,
             offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -631,7 +631,7 @@ class _BotaoPrimario extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: kAzul,
           foregroundColor: kBranco,
-          disabledBackgroundColor: kAzul.withOpacity(0.6),
+          disabledBackgroundColor: kAzul.withValues(alpha: 0.6),
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
@@ -669,7 +669,7 @@ class _Divisor extends StatelessWidget {
           child: Text(
             'ou',
             style: TextStyle(
-              color: kSubtexto.withOpacity(0.7),
+              color: kSubtexto.withValues(alpha: 0.7),
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
