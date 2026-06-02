@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cadeirotas_app/core/services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // ─── PALETA DO APP ────────────── Designer pode alterar por aqui
 const Color kAzul = Color(0xFF1A5CB8);
@@ -51,8 +53,41 @@ class _LoginScreenState extends State<LoginScreen>
   void _entrar() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _carregando = true);
-    await Future.delayed(const Duration(seconds: 1)); // stub
-    if (mounted) setState(() => _carregando = false);
+    try {
+      await AuthService().entrarComEmail(
+        _emailCtrl.text.trim(),
+        _senhaCtrl.text,
+      );
+      if (mounted) Navigator.pushReplacementNamed(context, '/splash');
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_mensagemErro(e.code)),
+            backgroundColor: kVermelho,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _carregando = false);
+    }
+  }
+
+  String _mensagemErro(String code) {
+    switch (code) {
+      case 'user-not-found':
+        return 'Usuário não encontrado.';
+      case 'wrong-password':
+        return 'Senha incorreta.';
+      case 'invalid-email':
+        return 'E-mail inválido.';
+      case 'user-disabled':
+        return 'Usuário desativado.';
+      case 'too-many-requests':
+        return 'Muitas tentativas. Tente mais tarde.';
+      default:
+        return 'Erro ao entrar. Tente novamente.';
+    }
   }
 
   void _esqueceuSenha() {
@@ -126,8 +161,31 @@ class _LoginScreenState extends State<LoginScreen>
                         _Divisor(),
                         const SizedBox(height: 20),
                         _BotaoGoogle(
-                          onPressed: () {
-                            // TO DO: implementar login Google com Firebase
+                          onPressed: () async {
+                            setState(() => _carregando = true);
+                            try {
+                              final user = await AuthService()
+                                  .entrarComGoogle();
+                              if (user != null && mounted) {
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/splash',
+                                );
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Erro ao entrar com Google. Tente novamente.',
+                                    ),
+                                    backgroundColor: kVermelho,
+                                  ),
+                                );
+                              }
+                            } finally {
+                              if (mounted) setState(() => _carregando = false);
+                            }
                           },
                         ),
                       ],
@@ -237,9 +295,14 @@ class _EsqueceuSenhaDialogState extends State<_EsqueceuSenhaDialog> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                 ),
-                onPressed: () {
-                  // TODO: Firebase resetPassword
-                  setState(() => _enviado = true);
+                onPressed: () async {
+                  try {
+                    await AuthService().enviarEmailReset(_ctrl.text.trim());
+                  } catch (_) {
+                    // mesmo em caso de erro não revelamos se o email existe
+                  } finally {
+                    if (mounted) setState(() => _enviado = true);
+                  }
                 },
                 child: const Text('Enviar',
                     style: TextStyle(color: kBranco, fontWeight: FontWeight.w600)),
@@ -291,8 +354,37 @@ class _CadastroScreenState extends State<CadastroScreen>
   void _cadastrar() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _carregando = true);
-    await Future.delayed(const Duration(seconds: 1)); // stub — salvar no Firestore
-    if (mounted) setState(() => _carregando = false);
+    try {
+      await AuthService().cadastrarComEmail(
+        _emailCtrl.text.trim(),
+        _senhaCtrl.text,
+      );
+      if (mounted) Navigator.pushReplacementNamed(context, '/splash');
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_mensagemErroCadastro(e.code)),
+            backgroundColor: kVermelho,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _carregando = false);
+    }
+  }
+
+  String _mensagemErroCadastro(String code) {
+    switch (code) {
+      case 'email-already-in-use':
+        return 'Este e-mail já está cadastrado.';
+      case 'invalid-email':
+        return 'E-mail inválido.';
+      case 'weak-password':
+        return 'Senha muito fraca. Use pelo menos 6 caracteres.';
+      default:
+        return 'Erro ao criar conta. Tente novamente.';
+    }
   }
 
   @override
@@ -358,8 +450,31 @@ class _CadastroScreenState extends State<CadastroScreen>
                         _Divisor(),
                         const SizedBox(height: 20),
                         _BotaoGoogle(
-                          onPressed: () {
-                            // TODO: Google Sign-In com Firebase
+                          onPressed: () async {
+                            setState(() => _carregando = true);
+                            try {
+                              final user = await AuthService()
+                                  .entrarComGoogle();
+                              if (user != null && mounted) {
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/splash',
+                                );
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Erro ao entrar com Google. Tente novamente.',
+                                    ),
+                                    backgroundColor: kVermelho,
+                                  ),
+                                );
+                              }
+                            } finally {
+                              if (mounted) setState(() => _carregando = false);
+                            }
                           },
                         ),
                       ],
