@@ -2,7 +2,7 @@
 Documentação técnica do **Projeto Cadei-Rotas** da disciplina **ENE0450 - Projeto Integrador de Fundamentos** da UnB, semestre 2026/1.
 
 <p align="center">
-  <img src="/docs/logo-horizontal.svg" alt="Logo Cadei-Rotas">
+  <img src="/docs/assets/logo-horizontal.svg" alt="Logo Cadei-Rotas">
 </p>
 
 
