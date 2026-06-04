@@ -5,6 +5,7 @@ import 'screens/login.dart';
 import 'screens/report_screen.dart';
 import 'screens/splash.dart';
 import 'screens/user_profile.dart';
+import 'screens/mapa.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,7 @@ class CadeiRotasApp extends StatelessWidget {
         '/splash':   (_) => const SplashScreen(),
         '/report':   (_) => const ReportScreen(),
         '/profile':  (_) => const TelaDePerfil(),
+        '/mapa':     (_) => const MapaScreen(),
       },
     );
   }
