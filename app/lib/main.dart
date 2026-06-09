@@ -23,7 +23,7 @@ class CadeiRotasApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Cadei-Rotas',
-      initialRoute: '/splash',
+      initialRoute: '/mapa',
       routes: {
         '/login':    (_) => const LoginScreen(),
         '/cadastro': (_) => const CadastroScreen(),

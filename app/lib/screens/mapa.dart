@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapaScreen extends StatefulWidget {
   const MapaScreen({super.key});
@@ -9,86 +10,59 @@ class MapaScreen extends StatefulWidget {
 
 class _MapaScreenState extends State<MapaScreen> {
   int _indiceAbaAtual = 0;
+  late GoogleMapController _mapController;
+
+  // Coordenadas centrais focadas na Faculdade de Tecnologia da UnB
+  final LatLng _posicaoInicial = const LatLng(-15.7633, -47.8702);
+
+  void _onMapCreated(GoogleMapController controller) {
+    _mapController = controller;
+  }
+
+  // Função que cria os pins reais no mapa
+  Set<Marker> _criarMarcadores() {
+    return {
+      Marker(
+        markerId: const MarkerId('acessivel_1'),
+        position: const LatLng(-15.7635, -47.8705),
+        // O Flutter permite alterar a cor (hue) do pin padrão do Google
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+        onTap: () => _mostrarDetalhesDoPin(context, 'Local Acessível', const Color(0xFF0E5FB5)),
+      ),
+      Marker(
+        markerId: const MarkerId('barreira_1'),
+        position: const LatLng(-15.7630, -47.8700),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+        onTap: () => _mostrarDetalhesDoPin(context, 'Barreira Parcial', const Color(0xFFD85A30)),
+      ),
+      Marker(
+        markerId: const MarkerId('bloqueio_1'),
+        position: const LatLng(-15.7628, -47.8708),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        onTap: () => _mostrarDetalhesDoPin(context, 'Bloqueio Total', const Color(0xFFA32D2D)),
+      ),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          Container(
-            width: double.infinity,
-            height: double.infinity,
-            color: Colors.grey[300],
-            child: const Center(
-              child: Text(
-                'Google Maps será renderizado aqui\n(Campus da UnB)',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 16,
-                  color: Colors.black54,
-                ),
-              ),
+          // 1. O Mapa Real do Google
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: _posicaoInicial,
+              zoom: 17.5, // Zoom aproximado para ver os caminhos do campus
             ),
+            markers: _criarMarcadores(),
+            myLocationEnabled: true, // Ativa a bolinha azul nativa do usuário (requer permissão de GPS no futuro)
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false, // Esconde os botões de + e - para um visual mais limpo
           ),
 
-          Positioned(
-            top: 400,
-            left: 200,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFF0E5FB5).withOpacity(0.3),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0E5FB5),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          Positioned(
-            top: 280,
-            left: 120,
-            child: GestureDetector(
-              onTap: () => _mostrarDetalhesDoPin(context, 'Local Acessível', const Color(0xFF0E5FB5)),
-              child: const Icon(Icons.location_on, size: 50, color: Color(0xFF0E5FB5)),
-            ),
-          ),
-
-          Positioned(
-            top: 350,
-            left: 250,
-            child: GestureDetector(
-              onTap: () => _mostrarDetalhesDoPin(context, 'Barreira Parcial', const Color(0xFFD85A30)),
-              child: const Icon(Icons.location_on, size: 50, color: Color(0xFFD85A30)),
-            ),
-          ),
-
-          Positioned(
-            top: 450,
-            left: 100,
-            child: GestureDetector(
-              onTap: () => _mostrarDetalhesDoPin(context, 'Bloqueio Total', const Color(0xFFA32D2D)),
-              child: const Icon(Icons.location_on, size: 50, color: Color(0xFFA32D2D)),
-            ),
-          ),
-
+          // 2. Barra de Busca Flutuante no Topo (mantida exatamente como você fez)
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -120,6 +94,7 @@ class _MapaScreenState extends State<MapaScreen> {
         ],
       ),
 
+      // Botão Flutuante de Reportar
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           debugPrint("Botão de criar report acionado");
@@ -136,6 +111,7 @@ class _MapaScreenState extends State<MapaScreen> {
         ),
       ),
 
+      // Barra de Navegação Inferior
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceAbaAtual,
         onTap: (index) {
@@ -161,6 +137,7 @@ class _MapaScreenState extends State<MapaScreen> {
     );
   }
 
+  // Função do painel inferior (mantida com a sua estrutura anterior)
   void _mostrarDetalhesDoPin(BuildContext context, String categoria, Color corPin) {
     String tituloFicticio = '';
     String descricaoFicticia = '';
