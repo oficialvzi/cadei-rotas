@@ -5,6 +5,7 @@ import 'screens/login.dart';
 import 'screens/report_screen.dart';
 import 'screens/splash.dart';
 import 'screens/user_profile.dart';
+import 'screens/instruction_slides.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,13 +23,14 @@ class CadeiRotasApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Cadei-Rotas',
-      initialRoute: '/splash',
+      initialRoute: '/instructions',
       routes: {
         '/login':    (_) => const LoginScreen(),
         '/cadastro': (_) => const CadastroScreen(),
         '/splash':   (_) => const SplashScreen(),
         '/report':   (_) => const ReportScreen(),
         '/profile':  (_) => const TelaDePerfil(),
+        '/instructions': (_) => const TelaDeInstrucoes(),
       },
     );
   }
