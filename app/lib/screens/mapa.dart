@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 
 class MapaScreen extends StatefulWidget {
   const MapaScreen({super.key});
@@ -12,20 +13,43 @@ class _MapaScreenState extends State<MapaScreen> {
   int _indiceAbaAtual = 0;
   late GoogleMapController _mapController;
 
-  // Coordenadas centrais focadas na Faculdade de Tecnologia da UnB
+  // Variável para controlar se o Android já liberou o GPS
+  bool _permissaoLocalizacaoConcedida = false;
+
   final LatLng _posicaoInicial = const LatLng(-15.7633, -47.8702);
+
+  @override
+  void initState() {
+    super.initState();
+    // Assim que a tela carregar, pedimos a permissão
+    _pedirPermissaoGPS();
+  }
+
+  // Função que faz o pop-up nativo do Android aparecer
+  Future<void> _pedirPermissaoGPS() async {
+    LocationPermission permissao = await Geolocator.checkPermission();
+
+    if (permissao == LocationPermission.denied) {
+      permissao = await Geolocator.requestPermission();
+    }
+
+    if (permissao == LocationPermission.whileInUse || permissao == LocationPermission.always) {
+      // Se o usuário permitiu, atualizamos a tela para ligar a bolinha azul no mapa
+      setState(() {
+        _permissaoLocalizacaoConcedida = true;
+      });
+    }
+  }
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
   }
 
-  // Função que cria os pins reais no mapa
   Set<Marker> _criarMarcadores() {
     return {
       Marker(
         markerId: const MarkerId('acessivel_1'),
         position: const LatLng(-15.7635, -47.8705),
-        // O Flutter permite alterar a cor (hue) do pin padrão do Google
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
         onTap: () => _mostrarDetalhesDoPin(context, 'Local Acessível', const Color(0xFF0E5FB5)),
       ),
@@ -49,20 +73,19 @@ class _MapaScreenState extends State<MapaScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // 1. O Mapa Real do Google
           GoogleMap(
             onMapCreated: _onMapCreated,
             initialCameraPosition: CameraPosition(
               target: _posicaoInicial,
-              zoom: 17.5, // Zoom aproximado para ver os caminhos do campus
+              zoom: 17.5,
             ),
             markers: _criarMarcadores(),
-            myLocationEnabled: true, // Ativa a bolinha azul nativa do usuário (requer permissão de GPS no futuro)
+            // Agora o mapa só ativa o GPS se a permissão foi dada com sucesso
+            myLocationEnabled: _permissaoLocalizacaoConcedida,
             myLocationButtonEnabled: false,
-            zoomControlsEnabled: false, // Esconde os botões de + e - para um visual mais limpo
+            zoomControlsEnabled: false,
           ),
 
-          // 2. Barra de Busca Flutuante no Topo (mantida exatamente como você fez)
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -94,7 +117,6 @@ class _MapaScreenState extends State<MapaScreen> {
         ],
       ),
 
-      // Botão Flutuante de Reportar
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           debugPrint("Botão de criar report acionado");
@@ -111,7 +133,6 @@ class _MapaScreenState extends State<MapaScreen> {
         ),
       ),
 
-      // Barra de Navegação Inferior
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceAbaAtual,
         onTap: (index) {
@@ -137,7 +158,6 @@ class _MapaScreenState extends State<MapaScreen> {
     );
   }
 
-  // Função do painel inferior (mantida com a sua estrutura anterior)
   void _mostrarDetalhesDoPin(BuildContext context, String categoria, Color corPin) {
     String tituloFicticio = '';
     String descricaoFicticia = '';
