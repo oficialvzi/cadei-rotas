@@ -266,7 +266,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: selecionado ? cor.withOpacity(0.06) : Colors.white,
+          color: selecionado ? cor.withValues(alpha: 0.06) : Colors.white,
           border: Border.all(
             color: selecionado ? cor : _cinzaBorda,
             width: selecionado ? 2 : 1,
@@ -316,7 +316,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     color: selecionado
-                        ? cor.withOpacity(0.8)
+                        ? cor.withValues(alpha: 0.8)
                         : _textoSecundario,
                   ),
                 ),
@@ -333,8 +333,8 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: _laranja.withOpacity(0.05),
-        border: Border.all(color: _laranja.withOpacity(0.3)),
+        color: _laranja.withValues(alpha: 0.05),
+        border: Border.all(color: _laranja.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -480,7 +480,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
         width: 90,
         height: 80,
         decoration: BoxDecoration(
-          color: destaque ? cor.withOpacity(0.08) : Colors.white,
+          color: destaque ? cor.withValues(alpha: 0.08) : Colors.white,
           border: Border.all(
             color: destaque ? cor : _cinzaBorda,
             width: destaque ? 2 : 1,
