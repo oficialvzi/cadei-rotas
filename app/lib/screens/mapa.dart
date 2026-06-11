@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 
 class MapaScreen extends StatefulWidget {
   const MapaScreen({super.key});
@@ -9,84 +11,79 @@ class MapaScreen extends StatefulWidget {
 
 class _MapaScreenState extends State<MapaScreen> {
   int _indiceAbaAtual = 0;
+  late GoogleMapController _mapController;
+
+  // Variável para controlar se o Android já liberou o GPS
+  bool _permissaoLocalizacaoConcedida = false;
+
+  final LatLng _posicaoInicial = const LatLng(-15.7633, -47.8702);
+
+  @override
+  void initState() {
+    super.initState();
+    // Assim que a tela carregar, pedimos a permissão
+    _pedirPermissaoGPS();
+  }
+
+  // Função que faz o pop-up nativo do Android aparecer
+  Future<void> _pedirPermissaoGPS() async {
+    LocationPermission permissao = await Geolocator.checkPermission();
+
+    if (permissao == LocationPermission.denied) {
+      permissao = await Geolocator.requestPermission();
+    }
+
+    if (permissao == LocationPermission.whileInUse || permissao == LocationPermission.always) {
+      // Se o usuário permitiu, atualizamos a tela para ligar a bolinha azul no mapa
+      setState(() {
+        _permissaoLocalizacaoConcedida = true;
+      });
+    }
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    _mapController = controller;
+  }
+
+  Set<Marker> _criarMarcadores() {
+    return {
+      Marker(
+        markerId: const MarkerId('acessivel_1'),
+        position: const LatLng(-15.7635, -47.8705),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+        onTap: () => _mostrarDetalhesDoPin(context, 'Local Acessível', const Color(0xFF0E5FB5)),
+      ),
+      Marker(
+        markerId: const MarkerId('barreira_1'),
+        position: const LatLng(-15.7630, -47.8700),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+        onTap: () => _mostrarDetalhesDoPin(context, 'Barreira Parcial', const Color(0xFFD85A30)),
+      ),
+      Marker(
+        markerId: const MarkerId('bloqueio_1'),
+        position: const LatLng(-15.7628, -47.8708),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        onTap: () => _mostrarDetalhesDoPin(context, 'Bloqueio Total', const Color(0xFFA32D2D)),
+      ),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          Container(
-            width: double.infinity,
-            height: double.infinity,
-            color: Colors.grey[300],
-            child: const Center(
-              child: Text(
-                'Google Maps será renderizado aqui\n(Campus da UnB)',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 16,
-                  color: Colors.black54,
-                ),
-              ),
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: _posicaoInicial,
+              zoom: 17.5,
             ),
-          ),
-
-          Positioned(
-            top: 400,
-            left: 200,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFF0E5FB5).withOpacity(0.3),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0E5FB5),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          Positioned(
-            top: 280,
-            left: 120,
-            child: GestureDetector(
-              onTap: () => _mostrarDetalhesDoPin(context, 'Local Acessível', const Color(0xFF0E5FB5)),
-              child: const Icon(Icons.location_on, size: 50, color: Color(0xFF0E5FB5)),
-            ),
-          ),
-
-          Positioned(
-            top: 350,
-            left: 250,
-            child: GestureDetector(
-              onTap: () => _mostrarDetalhesDoPin(context, 'Barreira Parcial', const Color(0xFFD85A30)),
-              child: const Icon(Icons.location_on, size: 50, color: Color(0xFFD85A30)),
-            ),
-          ),
-
-          Positioned(
-            top: 450,
-            left: 100,
-            child: GestureDetector(
-              onTap: () => _mostrarDetalhesDoPin(context, 'Bloqueio Total', const Color(0xFFA32D2D)),
-              child: const Icon(Icons.location_on, size: 50, color: Color(0xFFA32D2D)),
-            ),
+            markers: _criarMarcadores(),
+            // Agora o mapa só ativa o GPS se a permissão foi dada com sucesso
+            myLocationEnabled: _permissaoLocalizacaoConcedida,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
           ),
 
           SafeArea(
