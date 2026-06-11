@@ -30,7 +30,7 @@ class CadeiRotasApp extends StatelessWidget {
         '/cadastro': (_) => const CadastroScreen(),
         '/splash':   (_) => const SplashScreen(),
         '/profile':  (_) => const TelaDePerfil(),
-        '/instructions': (_) => const TelaDeInstrucoes(),
+        '/instrucoes': (_) => const TelaDeInstrucoes(),
         '/mapa':     (_) => const MapaScreen(),
       },
     );
