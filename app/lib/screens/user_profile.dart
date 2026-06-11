@@ -170,7 +170,9 @@ class TelaDePerfil extends StatelessWidget {
                   side: const BorderSide(color: Colors.red, width: 1.5), // Borda vermelha mais fina
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushNamed(context, '/login');
+                },
                 child: const Text('Sair da conta', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),

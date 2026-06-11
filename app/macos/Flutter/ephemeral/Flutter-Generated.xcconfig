@@ -1,7 +1,7 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=/home/vzi/flutter
-FLUTTER_APPLICATION_PATH=/home/vzi/Documents/UNB/cadei-rotas/app
-FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/home/vzi/Documents/UNB/cadei-rotas/app/macos/Flutter/ephemeral/Packages/.packages/FlutterFramework
+FLUTTER_ROOT=C:\Users\matheus\develop\flutter
+FLUTTER_APPLICATION_PATH=C:\Users\matheus\StudioProjects\cadei-rotas\app
+FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=C:\Users\matheus\StudioProjects\cadei-rotas\app\macos\Flutter\ephemeral\Packages\.packages\FlutterFramework
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_BUILD_DIR=build
 FLUTTER_BUILD_NAME=1.0.0

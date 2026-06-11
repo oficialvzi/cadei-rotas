@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TelaDeInstrucoes extends StatefulWidget {
   const TelaDeInstrucoes({super.key});
@@ -9,24 +10,26 @@ class TelaDeInstrucoes extends StatefulWidget {
 }
 
 class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
-  // O controlador que "vira" as páginas do nosso carrossel
   final PageController _controlador = PageController();
 
-  // Variável para guardar qual página estamos olhando agora (começa no 0)
   int _paginaAtual = 0;
+
+  Future<void> _finalizarTutorial() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('primeiroAcesso', false);
+
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/mapa');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Tiramos a cor fixa daqui para que o fundo dinâmico funcione
       backgroundColor: Colors.transparent,
 
-      // Envolvemos a tela inteira neste Container que controla o papel de parede
       body: Container(
         decoration: BoxDecoration(
-          // ==========================================
-          // A LÓGICA DO GRADIENTE
-          // ==========================================
           gradient: _paginaAtual == 0
               ? const LinearGradient(
             begin: Alignment.topCenter,
@@ -45,25 +48,14 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
         child: SafeArea(
           child: Column(
             children: [
-              // ==========================================
-              // 1. CABEÇALHO (Botão Pular)
-              // ==========================================
               Align(
                 alignment: Alignment.topRight,
                 child: TextButton(
-                  onPressed: () {
-                    // Lógica de pular
-                  },
-                  child: const Text(
-                    'Pular',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
-                  ),
+                  onPressed: _finalizarTutorial, // <-- Alterado
+                  child: const Text('Pular', style: TextStyle(color: Colors.grey, fontSize: 16)),
                 ),
               ),
 
-              // ==========================================
-              // 2. O PROJETOR DE SLIDES (PageView)
-              // ==========================================
               Expanded(
                 child: PageView(
                   controller: _controlador,
@@ -81,9 +73,6 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
                 ),
               ),
 
-              // ==========================================
-              // 3. INDICADOR DE PÁGINAS (As bolinhas)
-              // ==========================================
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(4, (index) {
@@ -103,9 +92,6 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
 
               const SizedBox(height: 20),
 
-              // ==========================================
-              // 4. BOTÃO PRINCIPAL INFERIOR
-              // ==========================================
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
                 child: SizedBox(
@@ -118,16 +104,16 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                    onPressed: () {
-                      if (_paginaAtual < 3) {
-                        _controlador.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      } else {
-                        // Ação do último slide
-                      }
-                    },
+                      onPressed: () {
+                        if (_paginaAtual < 3) {
+                          _controlador.nextPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        } else {
+                          _finalizarTutorial();
+                        }
+                      },
                     child: Text(
                       _paginaAtual == 3 ? 'Começar' : 'Próximo',
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
@@ -142,11 +128,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
     );
   }
 
-  // =========================================================================
-  // ABAIXO ESTÃO OS BLOCOS INDEPENDENTES DE CADA SLIDE
-  // =========================================================================
 
-// --- SLIDE 1: BOAS-VINDAS ---
   Widget _construirSlide1() {
     return Padding(
       // Mantemos o padding lateral de 20.0
@@ -156,10 +138,9 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
         children: [
           SvgPicture.asset(
             'assets/images/logo-icone-azul.svg',
-            height: 280, // Mantemos o logo imponente
+            height: 280,
           ),
 
-          // === AJUSTES DE ESPAÇAMENTO AQUI ===
           const SizedBox(height: 20), // Antes era 35
 
           const Text(
@@ -184,9 +165,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
           ),
 
           const SizedBox(height: 30), // Antes era 45
-          // ===================================
 
-          // Lista de itens (Manteremos o tamanho 20 para o texto)
           _itemLista(Colors.blue, 'Mapeie rampas e elevadores'),
           _itemLista(Colors.orange, 'Reporte barreiras arquitetônicas'),
           _itemLista(Colors.green, 'Ajude a comunidade UnB'),
@@ -195,9 +174,8 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
     );
   }
 
-  // --- SLIDE 2: CORES DOS PINS ---
   Widget _construirSlide2() {
-    // Adicionamos a rolagem por segurança, igual no Slide 1
+    // adiciona a rolagem por segurança, igual no Slide 1
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
@@ -249,7 +227,6 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
     );
   }
 
-  // --- SLIDE 3: COMO REPORTAR ---
   Widget _construirSlide3() {
     return Padding(
       // Removida a rolagem. Tela fixa novamente.
@@ -302,7 +279,6 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
     );
   }
 
-// --- SLIDE 4: COMUNIDADE ---
   Widget _construirSlide4() {
     return Padding(
       // Tela fixa novamente, sem rolagem
@@ -354,10 +330,6 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
       ),
     );
   }
-
-  // =========================================================================
-  // MINIFERRAMENTAS (Widgets auxiliares para não repetir código)
-  // =========================================================================
 
   Widget _itemLista(Color cor, String texto) {
     return Padding(

@@ -1,3 +1,11 @@
+import java.util.Properties
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -19,7 +27,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = "17"
     }
 
     defaultConfig {
@@ -32,8 +40,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        manifestPlaceholders = [MAPS_API_KEY: localProperties.getProperty('MAPS_API_KEY') ?: ""]
-    }
+        manifestPlaceholders += mapOf("MAPS_API_KEY" to (localProperties.getProperty("MAPS_API_KEY") ?: ""))    }
 
     buildTypes {
         release {

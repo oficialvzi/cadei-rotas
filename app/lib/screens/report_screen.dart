@@ -1,40 +1,21 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
-
-void main() {
-  runApp(const ReportScreen());
-}
-
-class ReportScreen extends StatelessWidget {
-  const ReportScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Novo Report',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2E7D32)),
-        useMaterial3: true,
-        fontFamily: 'Roboto',
-      ),
-      home: const NovoReportScreen(),
-    );
-  }
-}
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 enum SeveridadeBarreira { nenhuma, total, parcial }
-
 enum DificuldadeParcial { nenhuma, apenasManual, dificilPassagem }
 
 class NovoReportScreen extends StatefulWidget {
-  const NovoReportScreen({super.key});
+  final LatLng localEscolhido;
+
+  const NovoReportScreen({super.key, required this.localEscolhido});
 
   @override
   State<NovoReportScreen> createState() => _NovoReportScreenState();
 }
+
+
 
 class _NovoReportScreenState extends State<NovoReportScreen> {
   SeveridadeBarreira _severidade = SeveridadeBarreira.nenhuma;
