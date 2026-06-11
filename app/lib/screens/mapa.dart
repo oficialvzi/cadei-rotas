@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'report_screen.dart';
 
 class MapaScreen extends StatefulWidget {
   const MapaScreen({super.key});
@@ -13,19 +14,18 @@ class _MapaScreenState extends State<MapaScreen> {
   int _indiceAbaAtual = 0;
   late GoogleMapController _mapController;
 
-  // Variável para controlar se o Android já liberou o GPS
   bool _permissaoLocalizacaoConcedida = false;
+
+  bool _selecionandoLocalReport = false;
 
   final LatLng _posicaoInicial = const LatLng(-15.7633, -47.8702);
 
   @override
   void initState() {
     super.initState();
-    // Assim que a tela carregar, pedimos a permissão
     _pedirPermissaoGPS();
   }
 
-  // Função que faz o pop-up nativo do Android aparecer
   Future<void> _pedirPermissaoGPS() async {
     LocationPermission permissao = await Geolocator.checkPermission();
 
@@ -34,7 +34,6 @@ class _MapaScreenState extends State<MapaScreen> {
     }
 
     if (permissao == LocationPermission.whileInUse || permissao == LocationPermission.always) {
-      // Se o usuário permitiu, atualizamos a tela para ligar a bolinha azul no mapa
       setState(() {
         _permissaoLocalizacaoConcedida = true;
       });
@@ -84,6 +83,16 @@ class _MapaScreenState extends State<MapaScreen> {
             myLocationEnabled: _permissaoLocalizacaoConcedida,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
+            onTap: (LatLng localTocado) {
+              if (_selecionandoLocalReport) {
+                setState(() { _selecionandoLocalReport = false; }); // Desliga o modo seleção
+                // Vai para a tela de report enviando as coordenadas exatas
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => NovoReportScreen(localEscolhido: localTocado)),
+                );
+              }
+            },
           ),
 
           SafeArea(
@@ -119,26 +128,24 @@ class _MapaScreenState extends State<MapaScreen> {
 
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          debugPrint("Botão de criar report acionado");
+          setState(() {
+            _selecionandoLocalReport = !_selecionandoLocalReport;
+          });
         },
-        backgroundColor: const Color(0xFF0E5FB5),
-        icon: const Icon(Icons.add_location_alt, color: Colors.white),
-        label: const Text(
-          'Reportar',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+        backgroundColor: _selecionandoLocalReport ? const Color(0xFFD85A30) : const Color(0xFF0E5FB5),
+        icon: Icon(_selecionandoLocalReport ? Icons.touch_app : Icons.add_location_alt, color: Colors.white),
+        label: Text(
+          _selecionandoLocalReport ? 'Toque no local' : 'Reportar',
+          style: const TextStyle(fontFamily: 'Poppins', color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceAbaAtual,
         onTap: (index) {
-          setState(() {
-            _indiceAbaAtual = index;
-          });
+          if (index == 1) {
+            Navigator.pushNamed(context, '/profile'); // Vai para o Perfil
+          }
         },
         selectedItemColor: const Color(0xFF0E5FB5),
         unselectedItemColor: Colors.grey,
