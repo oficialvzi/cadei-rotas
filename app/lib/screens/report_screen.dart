@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cadeirotas_app/core/services/reports_service.dart';
+import 'package:cadeirotas_app/core/services/auth_service.dart';
 
 enum SeveridadeBarreira { nenhuma, total, parcial }
 enum DificuldadeParcial { nenhuma, apenasManual, dificilPassagem }
@@ -23,6 +26,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
   final _tituloController = TextEditingController();
   final _descricaoController = TextEditingController();
   File? _fotoSelecionada;
+  bool _salvando = false;
   final ImagePicker _picker = ImagePicker();
 
   static const Color _vermelho = Color(0xFFD32F2F);
@@ -82,7 +86,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
     );
   }
 
-  void _confirmar() {
+  Future<void> _confirmar() async {
     if (_severidade == SeveridadeBarreira.nenhuma) {
       _mostrarErro('Selecione a severidade da barreira.');
       return;
@@ -96,13 +100,49 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
       _mostrarErro('Informe o título.');
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Report enviado com sucesso!'),
-        backgroundColor: _verde,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+
+    // Mapeia a severidade da UI para a categoria do banco
+    final String categoria = _severidade == SeveridadeBarreira.total
+        ? 'bloqueio'
+        : 'parcial';
+
+    // Mapeia a dificuldade (só existe quando é parcial)
+    String? subcategoria;
+    if (_severidade == SeveridadeBarreira.parcial) {
+      subcategoria = _dificuldade == DificuldadeParcial.apenasManual
+          ? 'cadeira_manual'
+          : 'dificil_passagem';
+    }
+
+    // Garante uma sessão (anônima se não cadastrado)
+    final auth = AuthService();
+    final user = await auth.entrarAnonimo();
+    final uid = user?.uid ?? 'anonimo';
+
+    try {
+      await ReportsService().criarPin(
+        lat: widget.localEscolhido.latitude,
+        lng: widget.localEscolhido.longitude,
+        categoria: categoria,
+        subcategoria: subcategoria,
+        titulo: _tituloController.text.trim(),
+        descricao: _descricaoController.text.trim(),
+        fotoUrl: null, // ver observação sobre fotos no fim
+        criadoPor: uid,
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Report enviado com sucesso!'),
+          backgroundColor: _verde,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      Navigator.of(context).pop(); // volta ao mapa
+    } catch (e) {
+      _mostrarErro('Erro ao enviar report: $e');
+    }
   }
 
   @override
