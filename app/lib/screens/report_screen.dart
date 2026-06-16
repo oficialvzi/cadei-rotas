@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cadeirotas_app/core/services/reports_service.dart';
 import 'package:cadeirotas_app/core/services/auth_service.dart';
+import 'package:cadeirotas_app/core/services/storage_service.dart';
 
 enum SeveridadeBarreira { nenhuma, total, parcial }
 enum DificuldadeParcial { nenhuma, apenasManual, dificilPassagem }
@@ -27,6 +28,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
   final _descricaoController = TextEditingController();
   File? _fotoSelecionada;
   bool _salvando = false;
+  bool _enviando = false;
   final ImagePicker _picker = ImagePicker();
 
   static const Color _vermelho = Color(0xFFD32F2F);
@@ -101,12 +103,12 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
       return;
     }
 
-    // Mapeia a severidade da UI para a categoria do banco
+    setState(() => _enviando = true);
+
     final String categoria = _severidade == SeveridadeBarreira.total
         ? 'bloqueio'
         : 'parcial';
 
-    // Mapeia a dificuldade (só existe quando é parcial)
     String? subcategoria;
     if (_severidade == SeveridadeBarreira.parcial) {
       subcategoria = _dificuldade == DificuldadeParcial.apenasManual
@@ -114,20 +116,36 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
           : 'dificil_passagem';
     }
 
-    // Garante uma sessão (anônima se não cadastrado)
-    final auth = AuthService();
-    final user = await auth.entrarAnonimo();
-    final uid = user?.uid ?? 'anonimo';
-
     try {
-      await ReportsService().criarPin(
+      // 1. Garante sessão (anônima se não cadastrado)
+      final auth = AuthService();
+      final user = await auth.entrarAnonimo();
+      final uid = user?.uid ?? 'anonimo';
+
+      // 2. Gera o ID do pin (usado no caminho da foto)
+      final reports = ReportsService();
+      final pinId = reports.gerarIdPin();
+
+      // 3. Se tem foto, sobe pro Storage e pega a URL
+      String? fotoUrl;
+      if (_fotoSelecionada != null) {
+        final storage = StorageService();
+        fotoUrl = await storage.uploadFotoReport(
+          reportId: pinId,
+          caminhoLocal: _fotoSelecionada!.path,
+        );
+      }
+
+      // 4. Salva o pin no Firestore
+      await reports.criarPin(
+        pinId: pinId,
         lat: widget.localEscolhido.latitude,
         lng: widget.localEscolhido.longitude,
         categoria: categoria,
         subcategoria: subcategoria,
         titulo: _tituloController.text.trim(),
         descricao: _descricaoController.text.trim(),
-        fotoUrl: null, // ver observação sobre fotos no fim
+        fotoUrl: fotoUrl,
         criadoPor: uid,
       );
 
@@ -139,9 +157,12 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      Navigator.of(context).pop(); // volta ao mapa
+      Navigator.of(context).pop();
     } catch (e) {
-      _mostrarErro('Erro ao enviar report: $e');
+      if (mounted) {
+        setState(() => _enviando = false);
+        _mostrarErro('Erro ao enviar report: $e');
+      }
     }
   }
 
@@ -564,7 +585,9 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
       children: [
         Expanded(
           child: OutlinedButton(
-            onPressed: () => Navigator.of(context).maybePop(),
+            onPressed: _enviando
+                ? null
+                : () => Navigator.of(context).maybePop(),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
               side: const BorderSide(color: _cinzaBorda, width: 1.5),
@@ -585,7 +608,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton(
-            onPressed: _confirmar,
+            onPressed: _enviando ? null : _confirmar,
             style: ElevatedButton.styleFrom(
               backgroundColor: _verde,
               foregroundColor: Colors.white,
@@ -595,10 +618,19 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
               ),
               elevation: 0,
             ),
-            child: const Text(
-              'Confirmar',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-            ),
+            child: _enviando
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                : const Text(
+                    'Confirmar',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
           ),
         ),
       ],
