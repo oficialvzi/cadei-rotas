@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Remova o main() e CadeiRotasApp daqui — eles ficam só no main.dart
 
 class SplashScreen extends StatefulWidget {  // ← muda para StatefulWidget
   const SplashScreen({super.key});
@@ -15,12 +15,25 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Aguarda 3 segundos e navega para login, sem permitir voltar para a splash
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    });
+    _verificarPrimeiroAcesso();
+  }
+
+  Future<void> _verificarPrimeiroAcesso() async {
+    // aguarda os 3 segundos da animacao
+    await Future.delayed(const Duration(seconds: 3));
+
+    //  acessa a memoria
+    final prefs = await SharedPreferences.getInstance();
+    final bool primeiroAcesso = prefs.getBool('primeiroAcesso') ?? true;
+
+    if (!mounted) return;
+
+    //  redireciona de acordo com o historico
+    if (primeiroAcesso) {
+      Navigator.pushReplacementNamed(context, '/instrucoes');
+    } else {
+      Navigator.pushReplacementNamed(context, '/mapa');
+    }
   }
 
   @override
@@ -86,7 +99,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-// --- COMPONENTE DA ANIMAÇÃO DOS TRÊS PONTINHOS --- (sem alterações)
 class AnimatedThreeDots extends StatefulWidget {
   const AnimatedThreeDots({super.key});
 

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cadeirotas_app/core/models/categorias.dart';
+import 'report_screen.dart';
 
 class MapaScreen extends StatefulWidget {
   const MapaScreen({super.key});
@@ -10,34 +13,26 @@ class MapaScreen extends StatefulWidget {
 }
 
 class _MapaScreenState extends State<MapaScreen> {
-  int _indiceAbaAtual = 0;
-  late GoogleMapController _mapController;
-
-  // Variável para controlar se o Android já liberou o GPS
+  GoogleMapController? _mapController;
   bool _permissaoLocalizacaoConcedida = false;
+  bool _selecionandoLocalReport = false;
 
   final LatLng _posicaoInicial = const LatLng(-15.7633, -47.8702);
 
   @override
   void initState() {
     super.initState();
-    // Assim que a tela carregar, pedimos a permissão
     _pedirPermissaoGPS();
   }
 
-  // Função que faz o pop-up nativo do Android aparecer
   Future<void> _pedirPermissaoGPS() async {
     LocationPermission permissao = await Geolocator.checkPermission();
-
     if (permissao == LocationPermission.denied) {
       permissao = await Geolocator.requestPermission();
     }
-
-    if (permissao == LocationPermission.whileInUse || permissao == LocationPermission.always) {
-      // Se o usuário permitiu, atualizamos a tela para ligar a bolinha azul no mapa
-      setState(() {
-        _permissaoLocalizacaoConcedida = true;
-      });
+    if (permissao == LocationPermission.whileInUse ||
+        permissao == LocationPermission.always) {
+      setState(() => _permissaoLocalizacaoConcedida = true);
     }
   }
 
@@ -45,87 +40,109 @@ class _MapaScreenState extends State<MapaScreen> {
     _mapController = controller;
   }
 
-  Set<Marker> _criarMarcadores() {
-    return {
-      Marker(
-        markerId: const MarkerId('acessivel_1'),
-        position: const LatLng(-15.7635, -47.8705),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-        onTap: () => _mostrarDetalhesDoPin(context, 'Local Acessível', const Color(0xFF0E5FB5)),
-      ),
-      Marker(
-        markerId: const MarkerId('barreira_1'),
-        position: const LatLng(-15.7630, -47.8700),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-        onTap: () => _mostrarDetalhesDoPin(context, 'Barreira Parcial', const Color(0xFFD85A30)),
-      ),
-      Marker(
-        markerId: const MarkerId('bloqueio_1'),
-        position: const LatLng(-15.7628, -47.8708),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        onTap: () => _mostrarDetalhesDoPin(context, 'Bloqueio Total', const Color(0xFFA32D2D)),
-      ),
-    };
+  /// Converte os documentos do Firestore em marcadores do mapa.
+  Set<Marker> _marcadoresDosDocs(List<QueryDocumentSnapshot> docs) {
+    return docs.map((doc) {
+      final dados = doc.data() as Map<String, dynamic>;
+      final GeoPoint pos = dados['localizacao'] as GeoPoint;
+      final String categoria = dados['categoria'] ?? 'acessivel';
+
+      return Marker(
+        markerId: MarkerId(doc.id),
+        position: LatLng(pos.latitude, pos.longitude),
+        icon: BitmapDescriptor.defaultMarkerWithHue(Categorias.hue(categoria)),
+        onTap: () => _mostrarDetalhesDoPin(dados),
+      );
+    }).toSet();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(
-              target: _posicaoInicial,
-              zoom: 17.5,
-            ),
-            markers: _criarMarcadores(),
-            // Agora o mapa só ativa o GPS se a permissão foi dada com sucesso
-            myLocationEnabled: _permissaoLocalizacaoConcedida,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
-          ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('pins').snapshots(),
+        builder: (context, snapshot) {
+          final docs = snapshot.data?.docs ?? [];
+          final marcadores = _marcadoresDosDocs(docs);
 
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(25),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
+          return Stack(
+            children: [
+              GoogleMap(
+                onMapCreated: _onMapCreated,
+                initialCameraPosition: CameraPosition(
+                  target: _posicaoInicial,
+                  zoom: 17.5,
                 ),
-                child: const TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Buscar local na FT...',
-                    hintStyle: TextStyle(fontFamily: 'Inter', color: Colors.grey),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 15),
+                markers: marcadores,
+                myLocationEnabled: _permissaoLocalizacaoConcedida,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+                onTap: (LatLng localTocado) {
+                  if (_selecionandoLocalReport) {
+                    setState(() => _selecionandoLocalReport = false);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            NovoReportScreen(localEscolhido: localTocado),
+                      ),
+                    );
+                  }
+                },
+              ),
+
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Buscar local na FT...',
+                        hintStyle: TextStyle(
+                          fontFamily: 'Inter',
+                          color: Colors.grey,
+                        ),
+                        prefixIcon: Icon(Icons.search, color: Colors.grey),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 15),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
 
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          debugPrint("Botão de criar report acionado");
+          setState(() {
+            _selecionandoLocalReport = !_selecionandoLocalReport;
+          });
         },
-        backgroundColor: const Color(0xFF0E5FB5),
-        icon: const Icon(Icons.add_location_alt, color: Colors.white),
-        label: const Text(
-          'Reportar',
-          style: TextStyle(
+        backgroundColor: _selecionandoLocalReport
+            ? const Color(0xFFD85A30)
+            : const Color(0xFF0E5FB5),
+        icon: Icon(
+          _selecionandoLocalReport ? Icons.touch_app : Icons.add_location_alt,
+          color: Colors.white,
+        ),
+        label: Text(
+          _selecionandoLocalReport ? 'Toque no local' : 'Reportar',
+          style: const TextStyle(
             fontFamily: 'Poppins',
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -134,48 +151,35 @@ class _MapaScreenState extends State<MapaScreen> {
       ),
 
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _indiceAbaAtual,
+        currentIndex: 0,
         onTap: (index) {
-          setState(() {
-            _indiceAbaAtual = index;
-          });
+          if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/profile');
+          }
         },
         selectedItemColor: const Color(0xFF0E5FB5),
         unselectedItemColor: Colors.grey,
-        selectedLabelStyle: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600),
+        selectedLabelStyle: const TextStyle(
+          fontFamily: 'Poppins',
+          fontWeight: FontWeight.w600,
+        ),
         unselectedLabelStyle: const TextStyle(fontFamily: 'Inter'),
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Mapa',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Mapa'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ],
       ),
     );
   }
 
-  void _mostrarDetalhesDoPin(BuildContext context, String categoria, Color corPin) {
-    String tituloFicticio = '';
-    String descricaoFicticia = '';
-    int reportsFicticios = 0;
-
-    if (corPin == const Color(0xFF0E5FB5)) {
-      tituloFicticio = 'Rampa de Acesso Principal';
-      descricaoFicticia = 'A rampa encontra-se em perfeitas condições, com inclinação adequada e piso tátil. Acesso totalmente livre para o pavilhão de aulas.';
-      reportsFicticios = 1;
-    } else if (corPin == const Color(0xFFD85A30)) {
-      tituloFicticio = 'Porta muito pesada';
-      descricaoFicticia = 'A porta do laboratório de redes é excessivamente pesada e a mola está desregulada, dificultando muito a entrada sem auxílio externo.';
-      reportsFicticios = 4;
-    } else {
-      tituloFicticio = 'Caminho bloqueado por obras';
-      descricaoFicticia = 'Obras no corredor principal deixaram restos de material no chão, impossibilitando por completo a passagem de cadeiras de rodas.';
-      reportsFicticios = 12;
-    }
+  void _mostrarDetalhesDoPin(Map<String, dynamic> dados) {
+    final String categoria = dados['categoria'] ?? 'acessivel';
+    final Color corPin = Categorias.cores[categoria] ?? const Color(0xFF0E5FB5);
+    final String rotuloCategoria = Categorias.rotulos[categoria] ?? 'Local';
+    final String titulo = dados['titulo'] ?? 'Sem título';
+    final String descricao = dados['descricao'] ?? '';
+    final int totalReports = dados['totalReports'] ?? 1;
+    final String? fotoUrl = dados['fotoUrl'];
 
     showModalBottomSheet(
       context: context,
@@ -204,24 +208,36 @@ class _MapaScreenState extends State<MapaScreen> {
                 ),
               ),
 
+              // Foto (se houver) ou placeholder
               Container(
                 height: 160,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
                   borderRadius: BorderRadius.circular(16),
+                  image: fotoUrl != null
+                      ? DecorationImage(
+                          image: NetworkImage(fotoUrl),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.image, size: 48, color: Colors.grey),
-                    SizedBox(height: 8),
-                    Text(
-                      'Fotografia do local (em breve)',
-                      style: TextStyle(fontFamily: 'Inter', color: Colors.black54),
-                    ),
-                  ],
-                ),
+                child: fotoUrl == null
+                    ? const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.image, size: 48, color: Colors.grey),
+                          SizedBox(height: 8),
+                          Text(
+                            'Sem fotografia',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      )
+                    : null,
               ),
               const SizedBox(height: 16),
 
@@ -229,13 +245,16 @@ class _MapaScreenState extends State<MapaScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: corPin,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      categoria,
+                      rotuloCategoria,
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         color: Colors.white,
@@ -249,7 +268,7 @@ class _MapaScreenState extends State<MapaScreen> {
                       const Icon(Icons.people, size: 18, color: Colors.black54),
                       const SizedBox(width: 4),
                       Text(
-                        '$reportsFicticios reports',
+                        '$totalReports reports',
                         style: const TextStyle(
                           fontFamily: 'Inter',
                           color: Colors.black54,
@@ -263,7 +282,7 @@ class _MapaScreenState extends State<MapaScreen> {
               const SizedBox(height: 16),
 
               Text(
-                tituloFicticio,
+                titulo,
                 style: const TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 22,
@@ -274,7 +293,7 @@ class _MapaScreenState extends State<MapaScreen> {
               const SizedBox(height: 8),
 
               Text(
-                descricaoFicticia,
+                descricao,
                 style: const TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 15,
@@ -288,9 +307,7 @@ class _MapaScreenState extends State<MapaScreen> {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        debugPrint('Confirmar clicado');
-                      },
+                      onPressed: () => debugPrint('Confirmar clicado'),
                       icon: const Icon(Icons.thumb_up_alt_outlined),
                       label: const Text('Confirmar'),
                       style: ElevatedButton.styleFrom(
@@ -310,14 +327,15 @@ class _MapaScreenState extends State<MapaScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () {
-                        debugPrint('Contestar clicado');
-                      },
+                      onPressed: () => debugPrint('Contestar clicado'),
                       icon: const Icon(Icons.thumb_down_alt_outlined),
                       label: const Text('Contestar'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFFA32D2D),
-                        side: const BorderSide(color: Color(0xFFA32D2D), width: 1.5),
+                        side: const BorderSide(
+                          color: Color(0xFFA32D2D),
+                          width: 1.5,
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         textStyle: const TextStyle(
                           fontFamily: 'Poppins',

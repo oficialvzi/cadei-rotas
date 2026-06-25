@@ -1,40 +1,25 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
-
-void main() {
-  runApp(const ReportScreen());
-}
-
-class ReportScreen extends StatelessWidget {
-  const ReportScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Novo Report',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2E7D32)),
-        useMaterial3: true,
-        fontFamily: 'Roboto',
-      ),
-      home: const NovoReportScreen(),
-    );
-  }
-}
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cadeirotas_app/core/services/reports_service.dart';
+import 'package:cadeirotas_app/core/services/auth_service.dart';
+import 'package:cadeirotas_app/core/services/storage_service.dart';
 
 enum SeveridadeBarreira { nenhuma, total, parcial }
-
 enum DificuldadeParcial { nenhuma, apenasManual, dificilPassagem }
 
 class NovoReportScreen extends StatefulWidget {
-  const NovoReportScreen({super.key});
+  final LatLng localEscolhido;
+
+  const NovoReportScreen({super.key, required this.localEscolhido});
 
   @override
   State<NovoReportScreen> createState() => _NovoReportScreenState();
 }
+
+
 
 class _NovoReportScreenState extends State<NovoReportScreen> {
   SeveridadeBarreira _severidade = SeveridadeBarreira.nenhuma;
@@ -42,6 +27,8 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
   final _tituloController = TextEditingController();
   final _descricaoController = TextEditingController();
   File? _fotoSelecionada;
+  bool _salvando = false;
+  bool _enviando = false;
   final ImagePicker _picker = ImagePicker();
 
   static const Color _vermelho = Color(0xFFD32F2F);
@@ -101,7 +88,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
     );
   }
 
-  void _confirmar() {
+  Future<void> _confirmar() async {
     if (_severidade == SeveridadeBarreira.nenhuma) {
       _mostrarErro('Selecione a severidade da barreira.');
       return;
@@ -115,13 +102,68 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
       _mostrarErro('Informe o título.');
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Report enviado com sucesso!'),
-        backgroundColor: _verde,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+
+    setState(() => _enviando = true);
+
+    final String categoria = _severidade == SeveridadeBarreira.total
+        ? 'bloqueio'
+        : 'parcial';
+
+    String? subcategoria;
+    if (_severidade == SeveridadeBarreira.parcial) {
+      subcategoria = _dificuldade == DificuldadeParcial.apenasManual
+          ? 'cadeira_manual'
+          : 'dificil_passagem';
+    }
+
+    try {
+      // 1. Garante sessão (anônima se não cadastrado)
+      final auth = AuthService();
+      final user = await auth.entrarAnonimo();
+      final uid = user?.uid ?? 'anonimo';
+
+      // 2. Gera o ID do pin (usado no caminho da foto)
+      final reports = ReportsService();
+      final pinId = reports.gerarIdPin();
+
+      // 3. Se tem foto, sobe pro Storage e pega a URL
+      String? fotoUrl;
+      if (_fotoSelecionada != null) {
+        final storage = StorageService();
+        fotoUrl = await storage.uploadFotoReport(
+          reportId: pinId,
+          caminhoLocal: _fotoSelecionada!.path,
+        );
+      }
+
+      // 4. Salva o pin no Firestore
+      await reports.criarPin(
+        pinId: pinId,
+        lat: widget.localEscolhido.latitude,
+        lng: widget.localEscolhido.longitude,
+        categoria: categoria,
+        subcategoria: subcategoria,
+        titulo: _tituloController.text.trim(),
+        descricao: _descricaoController.text.trim(),
+        fotoUrl: fotoUrl,
+        criadoPor: uid,
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Report enviado com sucesso!'),
+          backgroundColor: _verde,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _enviando = false);
+        _mostrarErro('Erro ao enviar report: $e');
+      }
+    }
   }
 
   @override
@@ -543,7 +585,9 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
       children: [
         Expanded(
           child: OutlinedButton(
-            onPressed: () => Navigator.of(context).maybePop(),
+            onPressed: _enviando
+                ? null
+                : () => Navigator.of(context).maybePop(),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
               side: const BorderSide(color: _cinzaBorda, width: 1.5),
@@ -564,7 +608,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton(
-            onPressed: _confirmar,
+            onPressed: _enviando ? null : _confirmar,
             style: ElevatedButton.styleFrom(
               backgroundColor: _verde,
               foregroundColor: Colors.white,
@@ -574,10 +618,19 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
               ),
               elevation: 0,
             ),
-            child: const Text(
-              'Confirmar',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-            ),
+            child: _enviando
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                : const Text(
+                    'Confirmar',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
           ),
         ),
       ],

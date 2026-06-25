@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TelaDeInstrucoes extends StatefulWidget {
   const TelaDeInstrucoes({super.key});
@@ -12,6 +13,15 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
   final PageController _controlador = PageController(); //rolagem da pagina
 
   int _paginaAtual = 0;
+
+  Future<void> _finalizarTutorial() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('primeiroAcesso', false);
+
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/mapa');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,16 +47,11 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
         child: SafeArea(
           child: Column(
             children: [
-
               Align(
                 alignment: Alignment.topRight,
                 child: TextButton(
-                  onPressed: () {
-                  },
-                  child: const Text(
-                    'Pular',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
-                  ),
+                  onPressed: _finalizarTutorial, // <-- Alterado
+                  child: const Text('Pular', style: TextStyle(color: Colors.grey, fontSize: 16)),
                 ),
               ),
 
@@ -100,15 +105,16 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                    onPressed: () {
-                      if (_paginaAtual < 3) {
-                        _controlador.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      } else {
-                      }
-                    },
+                      onPressed: () {
+                        if (_paginaAtual < 3) {
+                          _controlador.nextPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        } else {
+                          _finalizarTutorial();
+                        }
+                      },
                     child: Text(
                       _paginaAtual == 3 ? 'Começar' : 'Próximo',
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
@@ -136,7 +142,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
             height: 280,
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 20), // Antes era 35
 
           const Text(
               'Bem-vindo ao\nCadei-Rotas',
@@ -159,9 +165,8 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
               )
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 30), // Antes era 45
 
-          //itens tela inicial
           _itemLista(Colors.blue, 'Mapeie rampas e elevadores'),
           _itemLista(Colors.orange, 'Reporte barreiras arquitetônicas'),
           _itemLista(Colors.green, 'Ajude a comunidade UnB'),
@@ -170,8 +175,8 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
     );
   }
 
-  //TELA 2: PINS
   Widget _construirSlide2() {
+    // adiciona a rolagem por segurança, igual no Slide 1
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
@@ -221,7 +226,6 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
     );
   }
 
-  // --- SLIDE 3: COMO REPORTAR ---
   Widget _construirSlide3() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
