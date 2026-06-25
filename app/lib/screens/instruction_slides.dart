@@ -10,7 +10,7 @@ class TelaDeInstrucoes extends StatefulWidget {
 }
 
 class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
-  final PageController _controlador = PageController();
+  final PageController _controlador = PageController(); //rolagem da pagina
 
   int _paginaAtual = 0;
 
@@ -27,22 +27,21 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-
       body: Container(
         decoration: BoxDecoration(
+
           gradient: _paginaAtual == 0
               ? const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFEAF4FF), // Azul super claro no topo
-              Colors.white,      // Desvanece para branco na parte inferior
+              Color(0xFFEAF4FF),
+              Colors.white,
             ],
           )
-              : null, // Desliga o gradiente se não estiver no Slide 1
-
-          // Se não estiver no Slide 1, aplica a cor bege padrão
-          color: _paginaAtual != 0 ? const Color(0xFFEAF4FF) : null,
+              : null,
+          //depois do slide 1, todos brancos
+          color: _paginaAtual != 0 ? const Color(0xFFFFFFFF) : null,
         ),
 
         child: SafeArea(
@@ -73,6 +72,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
                 ),
               ),
 
+              //indicativo de pagina
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(4, (index) {
@@ -92,6 +92,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
 
               const SizedBox(height: 20),
 
+              //botao de passar de pagina
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
                 child: SizedBox(
@@ -129,9 +130,9 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
   }
 
 
+//TELA1: BOAS VINDAS
   Widget _construirSlide1() {
     return Padding(
-      // Mantemos o padding lateral de 20.0
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -153,7 +154,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
               )
           ),
 
-          const SizedBox(height: 15), // Antes era 20
+          const SizedBox(height: 15),
 
           const Text(
               'Um app feito para\ntornar a UnB mais acessível',
@@ -182,25 +183,24 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Simula a sua imagem do mapa (Bem maior agora)
-            Container(
-              height: 240, // <--- Aumentado de 150 para 240
-              width: double.infinity,
-              decoration: BoxDecoration(
-                  color: const Color(0xFFE2EAD3), // Ajustei a cor para ficar mais parecida com o fundo do seu mapa
-                  borderRadius: BorderRadius.circular(20) // Bordas mais arredondadas
-              ),
-              child: const Icon(Icons.map, size: 100, color: Colors.white),
-            ),
 
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                'assets/images/mapa-pins-TelaInstrucao.png',
+                height: 240,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
             const SizedBox(height: 35),
 
             const Text(
                 'Cores dos pins',
                 style: TextStyle(
-                    fontSize: 32, // <--- Título muito maior
+                    fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF333333) // Cinza chumbo escuro
+                    color: Color(0xFF333333)
                 )
             ),
 
@@ -209,15 +209,14 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
             const Text(
                 'Veja a acessibilidade em um piscar',
                 style: TextStyle(
-                    fontSize: 20, // <--- Subtítulo maior
-                    color: Color(0xFF666666) // Cinza médio
+                    fontSize: 20,
+                    color: Color(0xFF666666)
                 )
             ),
 
             const SizedBox(height: 35),
 
-            // Caixas arredondadas coloridas (Elas vão crescer junto com a miniferramenta abaixo)
-            // As cores dos fundos foram ajustadas para os tons pasteis mais próximos do mockup
+            //itens em baixo da tela
             _caixaPin(const Color(0xFFE8F2FB), const Color(0xFF0055A4), 'Acessível', 'Rampa, elevador, banheiro PCD'),
             _caixaPin(const Color(0xFFFDEFE8), const Color(0xFFD65C2B), 'Parcialmente inacessível', 'Passa, mas com dificuldade'),
             _caixaPin(const Color(0xFFFBEBEB), const Color(0xFFA62A2A), 'Totalmente inacessível', 'Passagem bloqueada'),
@@ -229,35 +228,34 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
 
   Widget _construirSlide3() {
     return Padding(
-      // Removida a rolagem. Tela fixa novamente.
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Placeholder da imagem levemente achatado para salvar espaço
-          Container(
-            height: 180, // <--- Reduzido para caber os 4 passos grandes embaixo
-            width: double.infinity,
-            decoration: BoxDecoration(
-                color: const Color(0xFFFDEFE8),
-                borderRadius: BorderRadius.circular(20)
+
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.asset(
+              'assets/images/mapa-report-TelaInstrucao.png',
+              height: 250,
+              width: double.infinity,
+              fit: BoxFit.cover,
             ),
-            child: const Icon(Icons.add_circle, size: 80, color: Colors.deepOrange),
           ),
 
-          const SizedBox(height: 25), // Espaço reduzido
+          const SizedBox(height: 25),
 
           const Text(
               'Encontrou um obstáculo?',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 30, // Mantido bem grande
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF333333)
               )
           ),
 
-          const SizedBox(height: 8), // Espaço reduzido
+          const SizedBox(height: 8),
 
           const Text(
               'Reporte em 4 passos simples',
@@ -267,9 +265,8 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
               )
           ),
 
-          const SizedBox(height: 25), // Espaço reduzido
+          const SizedBox(height: 25),
 
-          // Passos numerados
           _passoNumerado('1', 'Toque no botão laranja', 'no canto inferior da tela'),
           _passoNumerado('2', 'Escolha a severidade', 'parcial ou total'),
           _passoNumerado('3', 'Adicione título e foto', 'câmera ou galeria'),
@@ -279,50 +276,49 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
     );
   }
 
+//TELA 4: COMUNIDADE
   Widget _construirSlide4() {
     return Padding(
-      // Tela fixa novamente, sem rolagem
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Retângulo ilustrativo achatado para não "empurrar" o resto para fora da tela
-          Container(
-            height: 160, // <--- Reduzido para caber as 3 caixas embaixo
-            width: double.infinity,
-            decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
-                borderRadius: BorderRadius.circular(20)
+
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.asset(
+              'assets/images/comunidade-TelaInstrucao.png',
+              height: 200,
+              width: double.infinity,
+              fit: BoxFit.cover,
             ),
-            child: const Icon(Icons.people, size: 70, color: Colors.teal),
           ),
 
-          const SizedBox(height: 25), // Espaço reduzido
+          const SizedBox(height: 25),
 
           const Text(
               'Juntos somos mais fortes',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 30, // Mantido grande
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF333333)
               )
           ),
 
-          const SizedBox(height: 8), // Espaço reduzido
+          const SizedBox(height: 8),
 
           const Text(
               'Sua contribuição transforma o campus',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 18, // Ajuste sutil
+                  fontSize: 18,
                   color: Color(0xFF666666)
               )
           ),
 
-          const SizedBox(height: 25), // Espaço reduzido
+          const SizedBox(height: 25),
 
-          // Caixas de comunidade
           _caixaComunidade(const Color(0xFFE8F5E9), Icons.check_circle, const Color(0xFF2E7D32), 'Confirme reports válidos', 'A barreira ainda existe?'),
           _caixaComunidade(const Color(0xFFFFF3E0), Icons.cancel, const Color(0xFFEF6C00), 'Conteste se já foi resolvido', 'A passagem está livre agora?'),
           _caixaComunidade(const Color(0xFFF3E5F5), Icons.smart_toy, const Color(0xFF6A1B9A), 'Validação automática', 'IA verifica cada foto enviada'),
@@ -331,19 +327,20 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
     );
   }
 
+  //widget de cada tela
   Widget _itemLista(Color cor, String texto) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0), // Aumentei o espaçamento entre as linhas
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
         children: [
-          Icon(Icons.circle, size: 16, color: cor), // <--- Bolinhas maiores
+          Icon(Icons.circle, size: 16, color: cor),
           const SizedBox(width: 15),
           Expanded(
             child: Text(
                 texto,
                 style: const TextStyle(
-                  fontSize: 20, // <--- Texto da lista maior
-                  color: Color(0xFF333333), // <--- Cinza chumbo profundo, igual ao mockup
+                  fontSize: 20,
+                  color: Color(0xFF333333),
                 )
             ),
           ),
@@ -355,34 +352,32 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
   Widget _caixaPin(Color corFundo, Color corIcone, String titulo, String subtitulo) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
-      // Aumentei o padding interno para a caixa ficar mais "gordinha"
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
           color: corFundo,
-          borderRadius: BorderRadius.circular(15) // Borda mais suave
+          borderRadius: BorderRadius.circular(15)
       ),
       child: Row(
         children: [
-          // Ícone do Pin maior
           Icon(Icons.location_on, size: 40, color: corIcone),
-          const SizedBox(width: 20), // Mais espaço entre o pin e o texto
-          Expanded( // Garante que textos longos não quebrem a tela
+          const SizedBox(width: 20),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                     titulo,
                     style: const TextStyle(
-                        fontSize: 18, // <--- Título da caixa maior
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF333333)
                     )
                 ),
-                const SizedBox(height: 4), // Pequeno espaço entre o título e o subtítulo
+                const SizedBox(height: 4),
                 Text(
                     subtitulo,
                     style: const TextStyle(
-                        fontSize: 15, // <--- Subtítulo da caixa maior
+                        fontSize: 15,
                         color: Color(0xFF666666)
                     )
                 ),
@@ -396,7 +391,6 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
 
   Widget _passoNumerado(String numero, String titulo, String subtitulo) {
     return Padding(
-      // O vertical foi de 12.0 para 8.0 (economizando espaço sem amassar o layout)
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
@@ -408,7 +402,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
                 style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 18 // Número grande
+                    fontSize: 18
                 )
             ),
           ),
@@ -420,16 +414,16 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
                 Text(
                     titulo,
                     style: const TextStyle(
-                        fontSize: 18, // Título grande
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF333333)
                     )
                 ),
-                const SizedBox(height: 2), // Diminuído de 4 para 2
+                const SizedBox(height: 2),
                 Text(
                     subtitulo,
                     style: const TextStyle(
-                        fontSize: 15, // Subtítulo grande
+                        fontSize: 15,
                         color: Color(0xFF666666)
                     )
                 ),
@@ -460,7 +454,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
                 Text(
                     titulo,
                     style: const TextStyle(
-                        fontSize: 18, // Título maior
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF333333)
                     )
@@ -469,7 +463,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
                 Text(
                     subtitulo,
                     style: const TextStyle(
-                        fontSize: 15, // Subtítulo maior
+                        fontSize: 15,
                         color: Color(0xFF666666)
                     )
                 ),
