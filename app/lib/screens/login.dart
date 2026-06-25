@@ -109,7 +109,18 @@ class _LoginScreenState extends State<LoginScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 20),
+                // ── Seta de voltar ao mapa ──
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: const Icon(Icons.arrow_back, color: kTexto),
+                    onPressed: () =>
+                        Navigator.pushReplacementNamed(context, '/mapa'),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 // ── Logo ──
                 _Logo(),
                 const SizedBox(height: 40),
@@ -399,7 +410,18 @@ class _CadastroScreenState extends State<CadastroScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 20),
+                // ── Seta de voltar ──
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: const Icon(Icons.arrow_back, color: kTexto),
+                    onPressed: () =>
+                        Navigator.pop(context),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 _Logo(),
                 const SizedBox(height: 40),
                 _Card(
