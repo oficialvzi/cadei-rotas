@@ -20,6 +20,8 @@ class _MapaScreenState extends State<MapaScreen> {
   // Mantido como posição de carregamento (Fallback) enquanto o GPS busca o satélite
   final LatLng _posicaoInicial = const LatLng(-15.7633, -47.8702);
 
+  static CameraPosition? _ultimaPosicaoSalva; //SALVA A ULTIMA POSIÇÃO EM QUE O MAPA FOI DEIXADO
+
   @override
   void initState() {
     super.initState();
@@ -98,10 +100,17 @@ class _MapaScreenState extends State<MapaScreen> {
             children: [
               GoogleMap(
                 onMapCreated: _onMapCreated,
-                initialCameraPosition: CameraPosition(
+                initialCameraPosition: _ultimaPosicaoSalva ?? CameraPosition(  //SE TIVER POSIÇÃO SALVA USA, SE NÃO VOLTA PARA A FT
                   target: _posicaoInicial,
                   zoom: 17.5,
                 ),
+
+                //AO MOVER O MAPA ANOTA A NOVA POSIÇÃO
+                onCameraMove: (CameraPosition posicaoAtual) {
+                  _ultimaPosicaoSalva = posicaoAtual;
+                },
+
+
                 markers: marcadores,
                 myLocationEnabled: _permissaoLocalizacaoConcedida,
                 myLocationButtonEnabled: false,
