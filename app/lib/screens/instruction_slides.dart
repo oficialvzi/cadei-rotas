@@ -132,29 +132,30 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
 
 //TELA1: BOAS VINDAS
   Widget _construirSlide1() {
-    return Padding(
+    return SingleChildScrollView(
+      child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SvgPicture.asset(
             'assets/images/logo-icone-azul.svg',
-            height: 280,
+            height: 200,
           ),
 
-          const SizedBox(height: 20), // Antes era 35
+          const SizedBox(height: 20),
 
           const Text(
               'Bem-vindo ao\nCadei-Rotas',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 40,
+                  fontSize: 36,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF0055A4)
               )
           ),
 
-          const SizedBox(height: 15),
+          const SizedBox(height: 10),
 
           const Text(
               'Um app feito para\ntornar a UnB mais acessível',
@@ -165,18 +166,19 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
               )
           ),
 
-          const SizedBox(height: 30), // Antes era 45
+          const SizedBox(height: 30),
 
           _itemLista(Colors.blue, 'Mapeie rampas e elevadores'),
           _itemLista(Colors.orange, 'Reporte barreiras arquitetônicas'),
           _itemLista(Colors.green, 'Ajude a comunidade UnB'),
         ],
       ),
+      ),
     );
   }
 
+  //TELA 2: CORES DOS PINS
   Widget _construirSlide2() {
-    // adiciona a rolagem por segurança, igual no Slide 1
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
@@ -188,7 +190,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
               borderRadius: BorderRadius.circular(20),
               child: Image.asset(
                 'assets/images/mapa-pins-TelaInstrucao.png',
-                height: 240,
+                height: 200,
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),
@@ -225,9 +227,10 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
       ),
     );
   }
-
+  //TELA 3: TELA DE REPORT
   Widget _construirSlide3() {
-    return Padding(
+    return SingleChildScrollView(
+      child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -237,7 +240,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
             borderRadius: BorderRadius.circular(20),
             child: Image.asset(
               'assets/images/mapa-report-TelaInstrucao.png',
-              height: 250,
+              height: 180,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
@@ -273,12 +276,14 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
           _passoNumerado('4', 'Marque no mapa', 'com um único toque'),
         ],
       ),
+      ),
     );
   }
 
 //TELA 4: COMUNIDADE
   Widget _construirSlide4() {
-    return Padding(
+    return SingleChildScrollView(
+        child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -288,7 +293,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
             borderRadius: BorderRadius.circular(20),
             child: Image.asset(
               'assets/images/comunidade-TelaInstrucao.png',
-              height: 200,
+              height: 150,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
@@ -323,6 +328,7 @@ class _TelaDeInstrucoesState extends State<TelaDeInstrucoes> {
           _caixaComunidade(const Color(0xFFFFF3E0), Icons.cancel, const Color(0xFFEF6C00), 'Conteste se já foi resolvido', 'A passagem está livre agora?'),
           _caixaComunidade(const Color(0xFFF3E5F5), Icons.smart_toy, const Color(0xFF6A1B9A), 'Validação automática', 'IA verifica cada foto enviada'),
         ],
+      ),
       ),
     );
   }
