@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+// ignore: unused_import (para se acaso for preciso incluir a autenticação nessa tela)
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cadeirotas_app/core/services/reports_service.dart';
 import 'package:cadeirotas_app/core/services/auth_service.dart';
@@ -9,7 +10,7 @@ import 'package:cadeirotas_app/core/services/storage_service.dart';
 
 // Enumeração atualizada para refletir a condição geral do local
 enum TipoCondicao { nenhuma, acessivel, total, parcial }
-enum DificuldadeParcial { nenhuma, apenasManual, dificilPassagem }
+enum DificuldadeParcial { nenhuma, apenasManual, dificilPassagem, passagemEstreita, rampaInclinada, requerAjuda, pequenosDesniveis, superficieIrregular, fluxoIntenso, pisoEscorregadio, inclinacaoLateral }
 
 class NovoReportScreen extends StatefulWidget {
   final LatLng localEscolhido;
@@ -106,6 +107,33 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
 
     setState(() => _enviando = true);
 
+
+    String? _chaveDificuldade(DificuldadeParcial d) {
+    switch (d) {
+      case DificuldadeParcial.apenasManual:
+        return 'cadeira_manual';
+      case DificuldadeParcial.dificilPassagem:
+        return 'dificil_passagem';
+      case DificuldadeParcial.passagemEstreita:
+        return 'passagem_estreita';
+      case DificuldadeParcial.rampaInclinada:
+        return 'rampa_inclinada';
+      case DificuldadeParcial.inclinacaoLateral:
+        return 'inclinacao_lateral';
+      case DificuldadeParcial.pisoEscorregadio:
+        return 'piso_escorregadio';
+      case DificuldadeParcial.fluxoIntenso:
+        return 'fluxo_intenso';
+      case DificuldadeParcial.superficieIrregular:
+        return 'superficie_irregular';
+      case DificuldadeParcial.pequenosDesniveis:
+        return 'pequenos_desniveis';
+      case DificuldadeParcial.requerAjuda:
+        return 'requer_ajuda';
+      case DificuldadeParcial.nenhuma:
+        return null;
+    }
+  }
     // Lógica atualizada para enviar a categoria correta ao Firestore
     final String categoria = _condicao == TipoCondicao.total
         ? 'bloqueio'
@@ -115,9 +143,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
 
     String? subcategoria;
     if (_condicao == TipoCondicao.parcial) {
-      subcategoria = _dificuldade == DificuldadeParcial.apenasManual
-          ? 'cadeira_manual'
-          : 'dificil_passagem';
+      subcategoria = _chaveDificuldade(_dificuldade);
     }
 
     try {
@@ -413,6 +439,46 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
           _buildOpcaoDificuldade(
             valor: DificuldadeParcial.dificilPassagem,
             label: 'Difícil Passagem',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.passagemEstreita,
+            label: 'Passagem Estreita',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.rampaInclinada,
+            label: 'Rampa muito Inclinada',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.inclinacaoLateral,
+            label: 'Inclinação Lateral',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.pisoEscorregadio,
+            label: 'Piso Escorregadio',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.fluxoIntenso,
+            label: 'Fluxo Intenso de Pessoas',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.superficieIrregular,
+            label: 'Superfície Irregular',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.pequenosDesniveis,
+            label: 'Pequenos Desnívels',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.requerAjuda,
+            label: 'Requer Ajuda de outra pessoa',
           ),
         ],
       ),
