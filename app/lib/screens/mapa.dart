@@ -21,6 +21,7 @@ class _MapaScreenState extends State<MapaScreen> {
   final LatLng _posicaoInicial = const LatLng(-15.7633, -47.8702);
 
   static CameraPosition? _ultimaPosicaoSalva; //SALVA A ULTIMA POSIÇÃO EM QUE O MAPA FOI DEIXADO
+  static bool _primeiraVezAbrindoApp = true; //VERIFICAR SE É A PRIMEIRA VEZ OU NÃO
 
   @override
   void initState() {
@@ -36,8 +37,11 @@ class _MapaScreenState extends State<MapaScreen> {
     if (permissao == LocationPermission.whileInUse ||
         permissao == LocationPermission.always) {
       setState(() => _permissaoLocalizacaoConcedida = true);
-      // Assim que a permissão for garantida, move a câmera
-      _moverParaLocalizacaoAtual();
+
+      if (_primeiraVezAbrindoApp) {
+        _moverParaLocalizacaoAtual();
+        _primeiraVezAbrindoApp = false; // Desliga a chave para o resto da sessao
+      }
     }
   }
 
@@ -66,8 +70,9 @@ class _MapaScreenState extends State<MapaScreen> {
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
     // Garante que o mapa vá para o local do usuário se a permissão já estiver salva no celular
-    if (_permissaoLocalizacaoConcedida) {
+    if (_permissaoLocalizacaoConcedida && _primeiraVezAbrindoApp) { //Se conceder a permissão e for a primeira vez abrindo
       _moverParaLocalizacaoAtual();
+      _primeiraVezAbrindoApp = false;
     }
   }
 
