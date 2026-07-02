@@ -17,6 +17,7 @@ class _MapaScreenState extends State<MapaScreen> {
   bool _permissaoLocalizacaoConcedida = false;
   bool _selecionandoLocalReport = false;
 
+  // Mantido como posição de carregamento (Fallback) enquanto o GPS busca o satélite
   final LatLng _posicaoInicial = const LatLng(-15.7633, -47.8702);
 
   static CameraPosition? _ultimaPosicaoSalva; //SALVA A ULTIMA POSIÇÃO EM QUE O MAPA FOI DEIXADO
@@ -35,11 +36,39 @@ class _MapaScreenState extends State<MapaScreen> {
     if (permissao == LocationPermission.whileInUse ||
         permissao == LocationPermission.always) {
       setState(() => _permissaoLocalizacaoConcedida = true);
+      // Assim que a permissão for garantida, move a câmera
+      _moverParaLocalizacaoAtual();
+    }
+  }
+
+  // Função nova que busca a coordenada real e anima o mapa
+  Future<void> _moverParaLocalizacaoAtual() async {
+    try {
+      Position pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      if (_mapController != null) {
+        _mapController!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(pos.latitude, pos.longitude),
+              zoom: 17.5,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Erro ao buscar localização: $e');
     }
   }
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
+    // Garante que o mapa vá para o local do usuário se a permissão já estiver salva no celular
+    if (_permissaoLocalizacaoConcedida) {
+      _moverParaLocalizacaoAtual();
+    }
   }
 
   /// Converte os documentos do Firestore em marcadores do mapa.
@@ -183,6 +212,10 @@ class _MapaScreenState extends State<MapaScreen> {
 
   void _mostrarDetalhesDoPin(Map<String, dynamic> dados) {
     final String categoria = dados['categoria'] ?? 'acessivel';
+    final String? subcategoria = dados['subcategoria'];
+    final String? subRotulo = subcategoria != null
+        ? Categorias.subRotulos[subcategoria]
+        : null;
     final Color corPin = Categorias.cores[categoria] ?? const Color(0xFF0E5FB5);
     final String rotuloCategoria = Categorias.rotulos[categoria] ?? 'Local';
     final String titulo = dados['titulo'] ?? 'Sem título';
@@ -217,7 +250,6 @@ class _MapaScreenState extends State<MapaScreen> {
                 ),
               ),
 
-              // Foto (se houver) ou placeholder
               Container(
                 height: 160,
                 width: double.infinity,
@@ -226,26 +258,26 @@ class _MapaScreenState extends State<MapaScreen> {
                   borderRadius: BorderRadius.circular(16),
                   image: fotoUrl != null
                       ? DecorationImage(
-                          image: NetworkImage(fotoUrl),
-                          fit: BoxFit.cover,
-                        )
+                    image: NetworkImage(fotoUrl),
+                    fit: BoxFit.cover,
+                  )
                       : null,
                 ),
                 child: fotoUrl == null
                     ? const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.image, size: 48, color: Colors.grey),
-                          SizedBox(height: 8),
-                          Text(
-                            'Sem fotografia',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ],
-                      )
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.image, size: 48, color: Colors.grey),
+                    SizedBox(height: 8),
+                    Text(
+                      'Sem fotografia',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                )
                     : null,
               ),
               const SizedBox(height: 16),
@@ -290,6 +322,20 @@ class _MapaScreenState extends State<MapaScreen> {
               ),
               const SizedBox(height: 16),
 
+              if (categoria == Categorias.parcial && subRotulo != null) ...[
+                Text(
+                  subRotulo.toUpperCase(),
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: corPin,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+              ],
+              
               Text(
                 titulo,
                 style: const TextStyle(

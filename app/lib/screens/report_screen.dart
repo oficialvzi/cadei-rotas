@@ -2,13 +2,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+// ignore: unused_import (para se acaso for preciso incluir a autenticação nessa tela)
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cadeirotas_app/core/services/reports_service.dart';
 import 'package:cadeirotas_app/core/services/auth_service.dart';
 import 'package:cadeirotas_app/core/services/storage_service.dart';
 
-enum SeveridadeBarreira { nenhuma, total, parcial }
-enum DificuldadeParcial { nenhuma, apenasManual, dificilPassagem }
+// Enumeração atualizada para refletir a condição geral do local
+enum TipoCondicao { nenhuma, acessivel, total, parcial }
+enum DificuldadeParcial { nenhuma, apenasManual, dificilPassagem, passagemEstreita, rampaInclinada, requerAjuda, pequenosDesniveis, superficieIrregular, fluxoIntenso, pisoEscorregadio, inclinacaoLateral }
 
 class NovoReportScreen extends StatefulWidget {
   final LatLng localEscolhido;
@@ -19,10 +21,8 @@ class NovoReportScreen extends StatefulWidget {
   State<NovoReportScreen> createState() => _NovoReportScreenState();
 }
 
-
-
 class _NovoReportScreenState extends State<NovoReportScreen> {
-  SeveridadeBarreira _severidade = SeveridadeBarreira.nenhuma;
+  TipoCondicao _condicao = TipoCondicao.nenhuma;
   DificuldadeParcial _dificuldade = DificuldadeParcial.nenhuma;
   final _tituloController = TextEditingController();
   final _descricaoController = TextEditingController();
@@ -31,6 +31,8 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
   bool _enviando = false;
   final ImagePicker _picker = ImagePicker();
 
+  // Cor azul adicionada à paleta
+  static const Color _azul = Color(0xFF0E5FB5);
   static const Color _vermelho = Color(0xFFD32F2F);
   static const Color _laranja = Color(0xFFE65100);
   static const Color _verde = Color(0xFF2E7D32);
@@ -89,11 +91,11 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
   }
 
   Future<void> _confirmar() async {
-    if (_severidade == SeveridadeBarreira.nenhuma) {
-      _mostrarErro('Selecione a severidade da barreira.');
+    if (_condicao == TipoCondicao.nenhuma) {
+      _mostrarErro('Selecione a condição do local.');
       return;
     }
-    if (_severidade == SeveridadeBarreira.parcial &&
+    if (_condicao == TipoCondicao.parcial &&
         _dificuldade == DificuldadeParcial.nenhuma) {
       _mostrarErro('Selecione o tipo de dificuldade.');
       return;
@@ -105,15 +107,43 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
 
     setState(() => _enviando = true);
 
-    final String categoria = _severidade == SeveridadeBarreira.total
+
+    String? _chaveDificuldade(DificuldadeParcial d) {
+    switch (d) {
+      case DificuldadeParcial.apenasManual:
+        return 'cadeira_manual';
+      case DificuldadeParcial.dificilPassagem:
+        return 'dificil_passagem';
+      case DificuldadeParcial.passagemEstreita:
+        return 'passagem_estreita';
+      case DificuldadeParcial.rampaInclinada:
+        return 'rampa_inclinada';
+      case DificuldadeParcial.inclinacaoLateral:
+        return 'inclinacao_lateral';
+      case DificuldadeParcial.pisoEscorregadio:
+        return 'piso_escorregadio';
+      case DificuldadeParcial.fluxoIntenso:
+        return 'fluxo_intenso';
+      case DificuldadeParcial.superficieIrregular:
+        return 'superficie_irregular';
+      case DificuldadeParcial.pequenosDesniveis:
+        return 'pequenos_desniveis';
+      case DificuldadeParcial.requerAjuda:
+        return 'requer_ajuda';
+      case DificuldadeParcial.nenhuma:
+        return null;
+    }
+  }
+    // Lógica atualizada para enviar a categoria correta ao Firestore
+    final String categoria = _condicao == TipoCondicao.total
         ? 'bloqueio'
-        : 'parcial';
+        : _condicao == TipoCondicao.parcial
+        ? 'parcial'
+        : 'acessivel';
 
     String? subcategoria;
-    if (_severidade == SeveridadeBarreira.parcial) {
-      subcategoria = _dificuldade == DificuldadeParcial.apenasManual
-          ? 'cadeira_manual'
-          : 'dificil_passagem';
+    if (_condicao == TipoCondicao.parcial) {
+      subcategoria = _chaveDificuldade(_dificuldade);
     }
 
     try {
@@ -152,7 +182,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Report enviado com sucesso!'),
+          content: Text('Ponto registrado com sucesso!'),
           backgroundColor: _verde,
           behavior: SnackBarBehavior.floating,
         ),
@@ -176,21 +206,30 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSecaoLabel('SEVERIDADE DA BARREIRA'),
+            _buildSecaoLabel('CONDIÇÃO DO LOCAL'),
             const SizedBox(height: 10),
 
-            // PIN VERMELHO em cima (conforme solicitado)
-            _buildOpcaoSeveridade(
-              valor: SeveridadeBarreira.total,
+            // PIN AZUL adicionado no topo
+            _buildOpcaoCondicao(
+              valor: TipoCondicao.acessivel,
+              titulo: 'Local Acessível',
+              subtitulo: 'Rampa, elevador, banheiro PCD',
+              cor: _azul,
+            ),
+            const SizedBox(height: 10),
+
+            // PIN VERMELHO
+            _buildOpcaoCondicao(
+              valor: TipoCondicao.total,
               titulo: 'Totalmente inacessível',
               subtitulo: 'Passagem bloqueada',
               cor: _vermelho,
             ),
             const SizedBox(height: 10),
 
-            // PIN LARANJA embaixo
-            _buildOpcaoSeveridade(
-              valor: SeveridadeBarreira.parcial,
+            // PIN LARANJA
+            _buildOpcaoCondicao(
+              valor: TipoCondicao.parcial,
               titulo: 'Parcialmente inacessível',
               subtitulo: 'Passa, mas com dificuldade',
               cor: _laranja,
@@ -200,11 +239,11 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
             AnimatedSize(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
-              child: _severidade == SeveridadeBarreira.parcial
+              child: _condicao == TipoCondicao.parcial
                   ? Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: _buildCampoDificuldade(),
-                    )
+                padding: const EdgeInsets.only(top: 12),
+                child: _buildCampoDificuldade(),
+              )
                   : const SizedBox.shrink(),
             ),
 
@@ -213,7 +252,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
             const SizedBox(height: 8),
             _buildTextField(
               controller: _tituloController,
-              hint: 'Escada sem rampa',
+              hint: 'Ex: Rampa de acesso ao pavilhão',
               maxLines: 1,
             ),
 
@@ -223,7 +262,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
             _buildTextField(
               controller: _descricaoController,
               hint:
-                  'Entrada lateral do bloco\nsó tem 4 degraus, sem\nrampa alternativa.',
+              'Ex: Rampa em perfeitas condições\ncom piso tátil e corrimão\nem ambos os lados.',
               maxLines: 4,
             ),
 
@@ -232,7 +271,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
             const SizedBox(height: 10),
             _buildSeletorFoto(),
 
-          if (_fotoSelecionada != null) ...[
+            if (_fotoSelecionada != null) ...[
               const SizedBox(height: 12),
               _buildPreviewFoto(),
             ],
@@ -264,7 +303,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
       ),
       leadingWidth: 100,
       title: const Text(
-        'Novo Report',
+        'Adicionar Pin',
         style: TextStyle(
           color: _textoPrimario,
           fontSize: 18,
@@ -286,19 +325,19 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
     );
   }
 
-  Widget _buildOpcaoSeveridade({
-    required SeveridadeBarreira valor,
+  Widget _buildOpcaoCondicao({
+    required TipoCondicao valor,
     required String titulo,
     required String subtitulo,
     required Color cor,
   }) {
-    final bool selecionado = _severidade == valor;
+    final bool selecionado = _condicao == valor;
 
     return GestureDetector(
       onTap: () {
         setState(() {
-          _severidade = valor;
-          if (valor != SeveridadeBarreira.parcial) {
+          _condicao = valor;
+          if (valor != TipoCondicao.parcial) {
             _dificuldade = DificuldadeParcial.nenhuma;
           }
         });
@@ -329,15 +368,15 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
               ),
               child: selecionado
                   ? Center(
-                      child: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: cor,
-                        ),
-                      ),
-                    )
+                child: Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: cor,
+                  ),
+                ),
+              )
                   : null,
             ),
             const SizedBox(width: 14),
@@ -401,6 +440,46 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
             valor: DificuldadeParcial.dificilPassagem,
             label: 'Difícil Passagem',
           ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.passagemEstreita,
+            label: 'Passagem Estreita',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.rampaInclinada,
+            label: 'Rampa muito Inclinada',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.inclinacaoLateral,
+            label: 'Inclinação Lateral',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.pisoEscorregadio,
+            label: 'Piso Escorregadio',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.fluxoIntenso,
+            label: 'Fluxo Intenso de Pessoas',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.superficieIrregular,
+            label: 'Superfície Irregular',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.pequenosDesniveis,
+            label: 'Pequenos Desnívels',
+          ),
+          const SizedBox(height: 10),
+          _buildOpcaoDificuldade(
+            valor: DificuldadeParcial.requerAjuda,
+            label: 'Requer Ajuda de outra pessoa',
+          ),
         ],
       ),
     );
@@ -429,15 +508,15 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
             ),
             child: selecionado
                 ? Center(
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _laranja,
-                      ),
-                    ),
-                  )
+              child: Container(
+                width: 12,
+                height: 12,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _laranja,
+                ),
+              ),
+            )
                 : null,
           ),
           const SizedBox(width: 10),
@@ -446,7 +525,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight:
-                  selecionado ? FontWeight.w600 : FontWeight.normal,
+              selecionado ? FontWeight.w600 : FontWeight.normal,
               color: selecionado ? _laranja : _textoPrimario,
             ),
           ),
@@ -470,7 +549,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
         filled: true,
         fillColor: _cinzaFundo,
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: _cinzaBorda, width: 1),
@@ -540,7 +619,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
                 fontSize: 12,
                 color: cor,
                 fontWeight:
-                    destaque ? FontWeight.w600 : FontWeight.normal,
+                destaque ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
           ],
@@ -620,17 +699,17 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
             ),
             child: _enviando
                 ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2.5,
-                    ),
-                  )
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2.5,
+              ),
+            )
                 : const Text(
-                    'Confirmar',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
+              'Confirmar',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            ),
           ),
         ),
       ],
