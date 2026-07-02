@@ -203,6 +203,10 @@ class _MapaScreenState extends State<MapaScreen> {
 
   void _mostrarDetalhesDoPin(Map<String, dynamic> dados) {
     final String categoria = dados['categoria'] ?? 'acessivel';
+    final String? subcategoria = dados['subcategoria'];
+    final String? subRotulo = subcategoria != null
+        ? Categorias.subRotulos[subcategoria]
+        : null;
     final Color corPin = Categorias.cores[categoria] ?? const Color(0xFF0E5FB5);
     final String rotuloCategoria = Categorias.rotulos[categoria] ?? 'Local';
     final String titulo = dados['titulo'] ?? 'Sem título';
@@ -309,6 +313,20 @@ class _MapaScreenState extends State<MapaScreen> {
               ),
               const SizedBox(height: 16),
 
+              if (categoria == Categorias.parcial && subRotulo != null) ...[
+                Text(
+                  subRotulo.toUpperCase(),
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: corPin,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+              ],
+              
               Text(
                 titulo,
                 style: const TextStyle(

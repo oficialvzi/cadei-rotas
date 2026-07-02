@@ -34,29 +34,34 @@ class Categorias {
     }
   }
 
-  /// Subcategorias do tipo parcial
+  /// Subcategorias do tipo parcial (espelha o enum DificuldadeParcial
+  /// da tela de report — NovoReportScreen)
   static const subParcial = [
-    'rampa_inclinacao_irregular',
     'cadeira_manual',
-    'cadeira_eletrica',
-    'piso_irregular',
-    'obstaculo_contornavel',
-  ];
-
-  /// Subcategorias do tipo bloqueio
-  static const subBloqueio = [
-    'escada_sem_alternativa',
-    'passagem_bloqueada',
-    'desnivel_intransponivel',
-    'porta_estreita',
+    'dificil_passagem',
+    'passagem_estreita',
+    'rampa_inclinada',
+    'inclinacao_lateral',
+    'piso_escorregadio',
+    'fluxo_intenso',
+    'superficie_irregular',
+    'pequenos_desniveis',
+    'requer_ajuda',
   ];
 
   static const subRotulos = {
-    'rampa_inclinacao_irregular': 'Rampa com inclinação fora da norma',
-    'cadeira_manual': 'Não passa cadeira manual',
-    'cadeira_eletrica': 'Não passa cadeira elétrica',
-    'piso_irregular': 'Piso irregular',
-    'obstaculo_contornavel': 'Obstáculo contornável',
+    // parcial
+    'cadeira_manual': 'Apenas Cadeiras Manuais',
+    'dificil_passagem': 'Difícil Passagem',
+    'passagem_estreita': 'Passagem Estreita',
+    'rampa_inclinada': 'Rampa muito Inclinada',
+    'inclinacao_lateral': 'Inclinação Lateral',
+    'piso_escorregadio': 'Piso Escorregadio',
+    'fluxo_intenso': 'Fluxo Intenso de Pessoas',
+    'superficie_irregular': 'Superfície Irregular',
+    'pequenos_desniveis': 'Pequenos Desníveis',
+    'requer_ajuda': 'Requer Ajuda de outra pessoa',
+    // bloqueio
     'escada_sem_alternativa': 'Escada sem alternativa',
     'passagem_bloqueada': 'Passagem bloqueada',
     'desnivel_intransponivel': 'Desnível intransponível',
