@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cadeirotas_app/core/models/categorias.dart';
+import 'package:cadeirotas_app/core/services/places_service.dart';
 import 'report_screen.dart';
 
 class MapaScreen extends StatefulWidget {
@@ -17,15 +19,31 @@ class _MapaScreenState extends State<MapaScreen> {
   bool _permissaoLocalizacaoConcedida = false;
   bool _selecionandoLocalReport = false;
 
-  // Mantido como posição de carregamento (Fallback) enquanto o GPS busca o satélite
   final LatLng _posicaoInicial = const LatLng(-15.7633, -47.8702);
+  static CameraPosition? _ultimaPosicaoSalva;
 
-  static CameraPosition? _ultimaPosicaoSalva; //SALVA A ULTIMA POSIÇÃO EM QUE O MAPA FOI DEIXADO
+  // ─── Busca ───────────────────────────────────────────────
+  final _buscaCtrl = TextEditingController();
+  final _placesService = PlacesService();
+  Timer? _debounce;
+  List<ResultadoLugar> _resultadosLugares = [];
+  List<QueryDocumentSnapshot> _resultadosPins = [];
+  bool _buscando = false;
+
+  // Guarda os pins atuais do stream, para buscar neles
+  List<QueryDocumentSnapshot> _pinsAtuais = [];
 
   @override
   void initState() {
     super.initState();
     _pedirPermissaoGPS();
+  }
+
+  @override
+  void dispose() {
+    _buscaCtrl.dispose();
+    _debounce?.cancel();
+    super.dispose();
   }
 
   Future<void> _pedirPermissaoGPS() async {
@@ -36,18 +54,15 @@ class _MapaScreenState extends State<MapaScreen> {
     if (permissao == LocationPermission.whileInUse ||
         permissao == LocationPermission.always) {
       setState(() => _permissaoLocalizacaoConcedida = true);
-      // Assim que a permissão for garantida, move a câmera
       _moverParaLocalizacaoAtual();
     }
   }
 
-  // Função nova que busca a coordenada real e anima o mapa
   Future<void> _moverParaLocalizacaoAtual() async {
     try {
       Position pos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-
       if (_mapController != null) {
         _mapController!.animateCamera(
           CameraUpdate.newCameraPosition(
@@ -65,19 +80,16 @@ class _MapaScreenState extends State<MapaScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    // Garante que o mapa vá para o local do usuário se a permissão já estiver salva no celular
     if (_permissaoLocalizacaoConcedida) {
       _moverParaLocalizacaoAtual();
     }
   }
 
-  /// Converte os documentos do Firestore em marcadores do mapa.
   Set<Marker> _marcadoresDosDocs(List<QueryDocumentSnapshot> docs) {
     return docs.map((doc) {
       final dados = doc.data() as Map<String, dynamic>;
       final GeoPoint pos = dados['localizacao'] as GeoPoint;
       final String categoria = dados['categoria'] ?? 'acessivel';
-
       return Marker(
         markerId: MarkerId(doc.id),
         position: LatLng(pos.latitude, pos.longitude),
@@ -87,6 +99,82 @@ class _MapaScreenState extends State<MapaScreen> {
     }).toSet();
   }
 
+  // ─── Lógica de busca ─────────────────────────────────────
+  void _onTextoBuscaMudou(String texto) {
+    _debounce?.cancel();
+
+    // Busca nos pins é instantânea (em memória)
+    final termo = texto.trim().toLowerCase();
+    if (termo.isEmpty) {
+      setState(() {
+        _resultadosLugares = [];
+        _resultadosPins = [];
+      });
+      return;
+    }
+
+    _resultadosPins = _pinsAtuais
+        .where((doc) {
+          final dados = doc.data() as Map<String, dynamic>;
+          final titulo = (dados['titulo'] ?? '').toString().toLowerCase();
+          return titulo.contains(termo);
+        })
+        .take(5)
+        .toList();
+
+    setState(() => _buscando = true);
+
+    // Busca de lugares no Google com debounce (evita chamar a cada tecla)
+    _debounce = Timer(const Duration(milliseconds: 400), () async {
+      final lugares = await _placesService.autocomplete(texto);
+      if (mounted) {
+        setState(() {
+          _resultadosLugares = lugares;
+          _buscando = false;
+        });
+      }
+    });
+  }
+
+  Future<void> _irParaLugar(ResultadoLugar lugar) async {
+    _fecharBusca();
+    final loc = await _placesService.detalhesLocalizacao(lugar.placeId);
+    if (loc != null && _mapController != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: LatLng(loc['lat']!, loc['lng']!), zoom: 18),
+        ),
+      );
+    }
+  }
+
+  void _irParaPin(QueryDocumentSnapshot doc) {
+    _fecharBusca();
+    final dados = doc.data() as Map<String, dynamic>;
+    final GeoPoint pos = dados['localizacao'] as GeoPoint;
+
+    _mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: LatLng(pos.latitude, pos.longitude), zoom: 18.5),
+      ),
+    );
+
+    // Abre o detalhe do pin após a câmera começar a mover
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) _mostrarDetalhesDoPin(dados);
+    });
+  }
+
+  void _fecharBusca() {
+    _buscaCtrl.clear();
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _resultadosLugares = [];
+      _resultadosPins = [];
+      _buscando = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,23 +182,20 @@ class _MapaScreenState extends State<MapaScreen> {
         stream: FirebaseFirestore.instance.collection('pins').snapshots(),
         builder: (context, snapshot) {
           final docs = snapshot.data?.docs ?? [];
+          _pinsAtuais = docs; // guarda para a busca
           final marcadores = _marcadoresDosDocs(docs);
+
+          final temResultados =
+              _resultadosLugares.isNotEmpty || _resultadosPins.isNotEmpty;
 
           return Stack(
             children: [
               GoogleMap(
                 onMapCreated: _onMapCreated,
-                initialCameraPosition: _ultimaPosicaoSalva ?? CameraPosition(  //SE TIVER POSIÇÃO SALVA USA, SE NÃO VOLTA PARA A FT
-                  target: _posicaoInicial,
-                  zoom: 17.5,
-                ),
-
-                //AO MOVER O MAPA ANOTA A NOVA POSIÇÃO
-                onCameraMove: (CameraPosition posicaoAtual) {
-                  _ultimaPosicaoSalva = posicaoAtual;
-                },
-
-
+                initialCameraPosition:
+                    _ultimaPosicaoSalva ??
+                    CameraPosition(target: _posicaoInicial, zoom: 17.5),
+                onCameraMove: (pos) => _ultimaPosicaoSalva = pos,
                 markers: marcadores,
                 myLocationEnabled: _permissaoLocalizacaoConcedida,
                 myLocationButtonEnabled: false,
@@ -125,38 +210,138 @@ class _MapaScreenState extends State<MapaScreen> {
                             NovoReportScreen(localEscolhido: localTocado),
                       ),
                     );
+                  } else {
+                    _fecharBusca(); // toque no mapa fecha a busca
                   }
                 },
               ),
 
+              // Barra de busca + resultados
               SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Container(
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(25),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(25),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: const TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Buscar local na FT...',
-                        hintStyle: TextStyle(
-                          fontFamily: 'Inter',
-                          color: Colors.grey,
+                        child: TextField(
+                          controller: _buscaCtrl,
+                          onChanged: _onTextoBuscaMudou,
+                          decoration: InputDecoration(
+                            hintText: 'Buscar local ou pino...',
+                            hintStyle: const TextStyle(
+                              fontFamily: 'Inter',
+                              color: Colors.grey,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.search,
+                              color: Colors.grey,
+                            ),
+                            suffixIcon: _buscaCtrl.text.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(
+                                      Icons.close,
+                                      color: Colors.grey,
+                                    ),
+                                    onPressed: _fecharBusca,
+                                  )
+                                : null,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 15,
+                            ),
+                          ),
                         ),
-                        prefixIcon: Icon(Icons.search, color: Colors.grey),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(vertical: 15),
                       ),
-                    ),
+
+                      // Lista de resultados
+                      if (temResultados || _buscando)
+                        Container(
+                          margin: const EdgeInsets.only(top: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          constraints: const BoxConstraints(maxHeight: 300),
+                          child: ListView(
+                            shrinkWrap: true,
+                            padding: EdgeInsets.zero,
+                            children: [
+                              // Pins primeiro
+                              ..._resultadosPins.map((doc) {
+                                final dados =
+                                    doc.data() as Map<String, dynamic>;
+                                final categoria =
+                                    dados['categoria'] ?? 'acessivel';
+                                final cor =
+                                    Categorias.cores[categoria] ??
+                                    const Color(0xFF0E5FB5);
+                                return ListTile(
+                                  leading: Icon(Icons.location_on, color: cor),
+                                  title: Text(dados['titulo'] ?? 'Pino'),
+                                  subtitle: Text(
+                                    Categorias.rotulos[categoria] ?? '',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  onTap: () => _irParaPin(doc),
+                                );
+                              }),
+
+                              // Depois lugares do Google
+                              ..._resultadosLugares.map((lugar) {
+                                return ListTile(
+                                  leading: const Icon(
+                                    Icons.place_outlined,
+                                    color: Colors.grey,
+                                  ),
+                                  title: Text(lugar.nomePrincipal),
+                                  subtitle: lugar.nomeSecundario.isNotEmpty
+                                      ? Text(
+                                          lugar.nomeSecundario,
+                                          style: const TextStyle(fontSize: 12),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        )
+                                      : null,
+                                  onTap: () => _irParaLugar(lugar),
+                                );
+                              }),
+
+                              if (_buscando)
+                                const Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Center(
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -249,8 +434,6 @@ class _MapaScreenState extends State<MapaScreen> {
                   ),
                 ),
               ),
-
-              // Foto (se houver) ou placeholder — tocável para ampliar
               GestureDetector(
                 onTap: fotoUrl != null
                     ? () {
@@ -294,7 +477,6 @@ class _MapaScreenState extends State<MapaScreen> {
                             )
                           : null,
                     ),
-                    // Ícone de "ampliar" no canto (só quando há foto)
                     if (fotoUrl != null)
                       Positioned(
                         top: 10,
@@ -316,7 +498,6 @@ class _MapaScreenState extends State<MapaScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -356,7 +537,6 @@ class _MapaScreenState extends State<MapaScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-
               if (categoria == Categorias.parcial && subRotulo != null) ...[
                 Text(
                   subRotulo.toUpperCase(),
@@ -370,7 +550,6 @@ class _MapaScreenState extends State<MapaScreen> {
                 ),
                 const SizedBox(height: 4),
               ],
-              
               Text(
                 titulo,
                 style: const TextStyle(
@@ -381,7 +560,6 @@ class _MapaScreenState extends State<MapaScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-
               Text(
                 descricao,
                 style: const TextStyle(
@@ -392,7 +570,6 @@ class _MapaScreenState extends State<MapaScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
               Row(
                 children: [
                   Expanded(
