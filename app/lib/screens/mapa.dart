@@ -250,35 +250,70 @@ class _MapaScreenState extends State<MapaScreen> {
                 ),
               ),
 
-              Container(
-                height: 160,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(16),
-                  image: fotoUrl != null
-                      ? DecorationImage(
-                    image: NetworkImage(fotoUrl),
-                    fit: BoxFit.cover,
-                  )
-                      : null,
-                ),
-                child: fotoUrl == null
-                    ? const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.image, size: 48, color: Colors.grey),
-                    SizedBox(height: 8),
-                    Text(
-                      'Sem fotografia',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ],
-                )
+              // Foto (se houver) ou placeholder — tocável para ampliar
+              GestureDetector(
+                onTap: fotoUrl != null
+                    ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => _VisualizadorFoto(url: fotoUrl),
+                          ),
+                        );
+                      }
                     : null,
+                child: Stack(
+                  children: [
+                    Container(
+                      height: 160,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(16),
+                        image: fotoUrl != null
+                            ? DecorationImage(
+                                image: NetworkImage(fotoUrl),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: fotoUrl == null
+                          ? const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.image, size: 48, color: Colors.grey),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Sem fotografia',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : null,
+                    ),
+                    // Ícone de "ampliar" no canto (só quando há foto)
+                    if (fotoUrl != null)
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Icon(
+                            Icons.zoom_in,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -409,6 +444,42 @@ class _MapaScreenState extends State<MapaScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  VISUALIZADOR DE FOTO EM TELA CHEIA (com zoom)
+// ══════════════════════════════════════════════════════════════════
+class _VisualizadorFoto extends StatelessWidget {
+  final String url;
+  const _VisualizadorFoto({required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          minScale: 0.8,
+          maxScale: 4.0,
+          child: Image.network(
+            url,
+            fit: BoxFit.contain,
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) return child;
+              return const CircularProgressIndicator(color: Colors.white);
+            },
+            errorBuilder: (context, error, stack) =>
+                const Icon(Icons.broken_image, color: Colors.white54, size: 64),
+          ),
+        ),
+      ),
     );
   }
 }
