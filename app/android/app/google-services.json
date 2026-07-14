@@ -22,11 +22,27 @@
           }
         },
         {
+          "client_id": "837512954782-n3slj2oopq7ooqjclcdcr46tqa2bd235.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cadeirotas_app",
+            "certificate_hash": "406cb1fcb99130948079a5e6c0fa1e723321d48e"
+          }
+        },
+        {
           "client_id": "837512954782-ot31ehdqj16ifnu0mfjh93ppqlmoabqa.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.cadeirotas_app",
             "certificate_hash": "fa6ee232b6d07fd4619942b2e1fc7cf9984510ac"
+          }
+        },
+        {
+          "client_id": "837512954782-t6tb14rb86r6edlgum38piuhjhgi6n1j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cadeirotas_app",
+            "certificate_hash": "de987c4811235cee3b8237d57cdf6767d31b0c40"
           }
         },
         {

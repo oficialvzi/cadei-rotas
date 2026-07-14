@@ -90,25 +90,8 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
     );
   }
 
-  Future<void> _confirmar() async {
-    if (_condicao == TipoCondicao.nenhuma) {
-      _mostrarErro('Selecione a condição do local.');
-      return;
-    }
-    if (_condicao == TipoCondicao.parcial &&
-        _dificuldade == DificuldadeParcial.nenhuma) {
-      _mostrarErro('Selecione o tipo de dificuldade.');
-      return;
-    }
-    if (_tituloController.text.trim().isEmpty) {
-      _mostrarErro('Informe o título.');
-      return;
-    }
-
-    setState(() => _enviando = true);
-
-
-    String? _chaveDificuldade(DificuldadeParcial d) {
+/// Mapeia a dificuldade selecionada para a chave usada no Firestore.
+  String? _chaveDificuldade(DificuldadeParcial d) {
     switch (d) {
       case DificuldadeParcial.apenasManual:
         return 'cadeira_manual';
@@ -134,7 +117,25 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
         return null;
     }
   }
-    // Lógica atualizada para enviar a categoria correta ao Firestore
+
+  Future<void> _confirmar() async {
+    if (_condicao == TipoCondicao.nenhuma) {
+      _mostrarErro('Selecione a condição do local.');
+      return;
+    }
+    if (_condicao == TipoCondicao.parcial &&
+        _dificuldade == DificuldadeParcial.nenhuma) {
+      _mostrarErro('Selecione o tipo de dificuldade.');
+      return;
+    }
+    if (_tituloController.text.trim().isEmpty) {
+      _mostrarErro('Informe o título.');
+      return;
+    }
+
+    setState(() => _enviando = true);
+
+    // Mapeia a condição da UI para a categoria do banco
     final String categoria = _condicao == TipoCondicao.total
         ? 'bloqueio'
         : _condicao == TipoCondicao.parcial
@@ -166,8 +167,8 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
         );
       }
 
-      // 4. Salva o pin no Firestore
-      await reports.criarPin(
+      // 4. Cria o pin OU junta a um pin parecido próximo
+      final resultado = await reports.criarOuJuntarPin(
         pinId: pinId,
         lat: widget.localEscolhido.latitude,
         lng: widget.localEscolhido.longitude,
@@ -177,12 +178,19 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
         descricao: _descricaoController.text.trim(),
         fotoUrl: fotoUrl,
         criadoPor: uid,
+        ehCadastrado: auth.estaCadastrado,
       );
 
       if (!mounted) return;
+
+      final juntado = resultado['juntado'] == true;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ponto registrado com sucesso!'),
+        SnackBar(
+          content: Text(
+            juntado
+                ? 'Já havia um report parecido aqui — sua contribuição foi somada a ele!'
+                : 'Report enviado com sucesso!',
+          ),
           backgroundColor: _verde,
           behavior: SnackBarBehavior.floating,
         ),
@@ -195,7 +203,7 @@ class _NovoReportScreenState extends State<NovoReportScreen> {
       }
     }
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -6,6 +6,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cadeirotas_app/core/models/categorias.dart';
 import 'package:cadeirotas_app/core/services/places_service.dart';
 import 'report_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cadeirotas_app/core/services/reports_service.dart';
+import 'package:cadeirotas_app/core/services/auth_service.dart';
 
 class MapaScreen extends StatefulWidget {
   const MapaScreen({super.key});
@@ -90,11 +93,15 @@ class _MapaScreenState extends State<MapaScreen> {
       final dados = doc.data() as Map<String, dynamic>;
       final GeoPoint pos = dados['localizacao'] as GeoPoint;
       final String categoria = dados['categoria'] ?? 'acessivel';
+      final String status = dados['status'] ?? 'ativo';
+      final bool pendente = status == 'pendente';
+
       return Marker(
         markerId: MarkerId(doc.id),
         position: LatLng(pos.latitude, pos.longitude),
         icon: BitmapDescriptor.defaultMarkerWithHue(Categorias.hue(categoria)),
-        onTap: () => _mostrarDetalhesDoPin(dados),
+        alpha: pendente ? 0.5 : 1.0, // ← translúcido se pendente
+        onTap: () => _mostrarDetalhesDoPin(doc.id, dados),
       );
     }).toSet();
   }
@@ -161,7 +168,7 @@ class _MapaScreenState extends State<MapaScreen> {
 
     // Abre o detalhe do pin após a câmera começar a mover
     Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) _mostrarDetalhesDoPin(dados);
+      if (mounted) _mostrarDetalhesDoPin(doc.id, dados);
     });
   }
 
@@ -179,7 +186,10 @@ class _MapaScreenState extends State<MapaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('pins').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('pins')
+            .where('status', whereIn: ['pendente', 'ativo'])
+            .snapshots(),
         builder: (context, snapshot) {
           final docs = snapshot.data?.docs ?? [];
           _pinsAtuais = docs; // guarda para a busca
@@ -395,7 +405,7 @@ class _MapaScreenState extends State<MapaScreen> {
     );
   }
 
-  void _mostrarDetalhesDoPin(Map<String, dynamic> dados) {
+  void _mostrarDetalhesDoPin(String pinId, Map<String, dynamic> dados) {
     final String categoria = dados['categoria'] ?? 'acessivel';
     final String? subcategoria = dados['subcategoria'];
     final String? subRotulo = subcategoria != null
@@ -405,220 +415,397 @@ class _MapaScreenState extends State<MapaScreen> {
     final String rotuloCategoria = Categorias.rotulos[categoria] ?? 'Local';
     final String titulo = dados['titulo'] ?? 'Sem título';
     final String descricao = dados['descricao'] ?? '';
-    final int totalReports = dados['totalReports'] ?? 1;
     final String? fotoUrl = dados['fotoUrl'];
+    final bool verificado = dados['verificado'] == true;
+    final String status = dados['status'] ?? 'ativo';
+
+    final reports = ReportsService();
+    final auth = AuthService();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: const BoxDecoration(
-            color: Color(0xFFE1F5EE),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+        // StreamBuilder para os contadores atualizarem ao vivo
+        return StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('pins')
+              .doc(pinId)
+              .snapshots(),
+          builder: (context, snap) {
+            final atual = (snap.data?.data() as Map<String, dynamic>?) ?? dados;
+            final int totalConfirma = atual['totalConfirma'] ?? 0;
+            final int totalContesta = atual['totalContesta'] ?? 0;
+            final String statusAtual = atual['status'] ?? status;
+            final bool verificadoAtual =
+                atual['verificado'] == true || verificado;
+
+            return Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: Color(0xFFE1F5EE),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
-              GestureDetector(
-                onTap: fotoUrl != null
-                    ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => _VisualizadorFoto(url: fotoUrl),
-                          ),
-                        );
-                      }
-                    : null,
-                child: Stack(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      height: 160,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(16),
-                        image: fotoUrl != null
-                            ? DecorationImage(
-                                image: NetworkImage(fotoUrl),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: fotoUrl == null
-                          ? const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.image, size: 48, color: Colors.grey),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Sem fotografia',
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : null,
-                    ),
-                    if (fotoUrl != null)
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Icon(
-                            Icons.zoom_in,
-                            color: Colors.white,
-                            size: 20,
-                          ),
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[400],
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
+                    ),
+
+                    // ── AVISO DE PENDENTE ──
+                    if (statusAtual == 'pendente') ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF4E0),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE0B050)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.hourglass_empty,
+                              size: 18,
+                              color: Color(0xFFB07800),
+                            ),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Aguardando confirmações da comunidade',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12,
+                                  color: Color(0xFFB07800),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+
+                    // ── FOTO ──
+                    GestureDetector(
+                      onTap: fotoUrl != null
+                          ? () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => _VisualizadorFoto(url: fotoUrl),
+                              ),
+                            )
+                          : null,
+                      child: Stack(
+                        children: [
+                          Container(
+                            height: 160,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(16),
+                              image: fotoUrl != null
+                                  ? DecorationImage(
+                                      image: NetworkImage(fotoUrl),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            child: fotoUrl == null
+                                ? const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.image,
+                                        size: 48,
+                                        color: Colors.grey,
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Sem fotografia',
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          color: Colors.black54,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : null,
+                          ),
+                          if (fotoUrl != null)
+                            Positioned(
+                              top: 10,
+                              right: 10,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black54,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Icon(
+                                  Icons.zoom_in,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ── CATEGORIA + VERIFICADO + CONTADORES ──
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: corPin,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                rotuloCategoria,
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            if (verificadoAtual) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0F6E56),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.verified,
+                                      size: 14,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Verificado',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Contadores confirma/contesta
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.thumb_up,
+                          size: 15,
+                          color: Color(0xFF0E5FB5),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$totalConfirma confirmam',
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 13,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        const Icon(
+                          Icons.thumb_down,
+                          size: 15,
+                          color: Color(0xFFA32D2D),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$totalContesta contestam',
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 13,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    if (categoria == Categorias.parcial &&
+                        subRotulo != null) ...[
+                      Text(
+                        subRotulo.toUpperCase(),
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: corPin,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+
+                    Text(
+                      titulo,
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      descricao,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 15,
+                        height: 1.5,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // ── BOTÕES DE VOTAÇÃO ──
+                    FutureBuilder<String?>(
+                      future: auth.usuarioAtual != null
+                          ? reports.votoDoUsuario(pinId, auth.usuarioAtual!.uid)
+                          : Future.value(null),
+                      builder: (context, votoSnap) {
+                        final meuVoto = votoSnap.data;
+
+                        Future<void> aoVotar(String tipo) async {
+                          final user = await auth.entrarAnonimo();
+                          if (user == null) return;
+                          await reports.votar(
+                            pinId: pinId,
+                            uid: user.uid,
+                            ehCadastrado: auth.estaCadastrado,
+                            tipo: tipo,
+                          );
+                          // força rebuild do FutureBuilder
+                          if (context.mounted) {
+                            (context as Element).markNeedsBuild();
+                          }
+                        }
+
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => aoVotar('confirma'),
+                                icon: Icon(
+                                  meuVoto == 'confirma'
+                                      ? Icons.thumb_up
+                                      : Icons.thumb_up_alt_outlined,
+                                ),
+                                label: Text(
+                                  meuVoto == 'confirma'
+                                      ? 'Confirmado'
+                                      : 'Confirmar',
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: meuVoto == 'confirma'
+                                      ? const Color(0xFF0B4A8F)
+                                      : const Color(0xFF0E5FB5),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  textStyle: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => aoVotar('contesta'),
+                                icon: Icon(
+                                  meuVoto == 'contesta'
+                                      ? Icons.thumb_down
+                                      : Icons.thumb_down_alt_outlined,
+                                ),
+                                label: Text(
+                                  meuVoto == 'contesta'
+                                      ? 'Contestado'
+                                      : 'Contestar',
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFFA32D2D),
+                                  backgroundColor: meuVoto == 'contesta'
+                                      ? const Color(0xFFF7E0E0)
+                                      : null,
+                                  side: const BorderSide(
+                                    color: Color(0xFFA32D2D),
+                                    width: 1.5,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  textStyle: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: corPin,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      rotuloCategoria,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      const Icon(Icons.people, size: 18, color: Colors.black54),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$totalReports reports',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          color: Colors.black54,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              if (categoria == Categorias.parcial && subRotulo != null) ...[
-                Text(
-                  subRotulo.toUpperCase(),
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: corPin,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 4),
-              ],
-              Text(
-                titulo,
-                style: const TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A1A),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                descricao,
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 15,
-                  height: 1.5,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => debugPrint('Confirmar clicado'),
-                      icon: const Icon(Icons.thumb_up_alt_outlined),
-                      label: const Text('Confirmar'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0E5FB5),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        textStyle: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.bold,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => debugPrint('Contestar clicado'),
-                      icon: const Icon(Icons.thumb_down_alt_outlined),
-                      label: const Text('Contestar'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFA32D2D),
-                        side: const BorderSide(
-                          color: Color(0xFFA32D2D),
-                          width: 1.5,
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        textStyle: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.bold,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            );
+          },
         );
       },
     );
