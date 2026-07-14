@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cadeirotas_app/core/services/auth_service.dart';
+import 'package:cadeirotas_app/core/services/reports_service.dart';
 
 class TelaDePerfil extends StatelessWidget {
   const TelaDePerfil({super.key});
@@ -79,6 +80,7 @@ class TelaDePerfil extends StatelessWidget {
           const SizedBox(height: 20),
 
           // CARTÃO BRANCO DE ESTATÍSTICAS (ainda mock)
+          // CARTÃO DE ESTATÍSTICAS (dados reais do Firestore)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Container(
@@ -87,15 +89,66 @@ class TelaDePerfil extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _estatistica('12', 'REPORTS', Colors.blue),
-                  Container(height: 40, width: 2, color: Colors.grey[300]),
-                  _estatistica('38', 'CONFIRMAÇÕES', Colors.green),
-                  Container(height: 40, width: 2, color: Colors.grey[300]),
-                  _estatistica('5', 'CONTESTAÇÕES', Colors.redAccent),
-                ],
+              child: FutureBuilder<Map<String, int>>(
+                future: usuario != null
+                    ? ReportsService().estatisticasUsuario(usuario.uid)
+                    : Future.value({
+                        'reports': 0,
+                        'confirmacoes': 0,
+                        'contestacoes': 0,
+                      }),
+                builder: (context, snap) {
+                  if (snap.connectionState == ConnectionState.waiting) {
+                    return const SizedBox(
+                      height: 50,
+                      child: Center(
+                        child: SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    );
+                  }
+                  if (snap.hasError) {
+                    debugPrint('❌ ERRO estatísticas: ${snap.error}');
+                    return Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Text(
+                        'Erro: ${snap.error}',
+                        style: const TextStyle(fontSize: 10, color: Colors.red),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
+
+                  final dados =
+                      snap.data ??
+                      {'reports': 0, 'confirmacoes': 0, 'contestacoes': 0};
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _estatistica(
+                        '${dados['reports']}',
+                        'REPORTS',
+                        Colors.blue,
+                      ),
+                      Container(height: 40, width: 2, color: Colors.grey[300]),
+                      _estatistica(
+                        '${dados['confirmacoes']}',
+                        'CONFIRMAÇÕES',
+                        Colors.green,
+                      ),
+                      Container(height: 40, width: 2, color: Colors.grey[300]),
+                      _estatistica(
+                        '${dados['contestacoes']}',
+                        'CONTESTAÇÕES',
+                        Colors.redAccent,
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ),

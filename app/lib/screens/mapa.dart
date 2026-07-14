@@ -57,7 +57,7 @@ class _MapaScreenState extends State<MapaScreen> {
     if (permissao == LocationPermission.whileInUse ||
         permissao == LocationPermission.always) {
       setState(() => _permissaoLocalizacaoConcedida = true);
-      _moverParaLocalizacaoAtual();
+      //_moverParaLocalizacaoAtual();
     }
   }
 
@@ -83,9 +83,9 @@ class _MapaScreenState extends State<MapaScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    if (_permissaoLocalizacaoConcedida) {
-      _moverParaLocalizacaoAtual();
-    }
+    //if (_permissaoLocalizacaoConcedida) {
+    //  _moverParaLocalizacaoAtual();
+    //}
   }
 
   Set<Marker> _marcadoresDosDocs(List<QueryDocumentSnapshot> docs) {
@@ -203,7 +203,6 @@ class _MapaScreenState extends State<MapaScreen> {
               GoogleMap(
                 onMapCreated: _onMapCreated,
                 initialCameraPosition:
-                    _ultimaPosicaoSalva ??
                     CameraPosition(target: _posicaoInicial, zoom: 17.5),
                 onCameraMove: (pos) => _ultimaPosicaoSalva = pos,
                 markers: marcadores,

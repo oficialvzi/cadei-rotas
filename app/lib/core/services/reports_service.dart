@@ -9,7 +9,11 @@ class ReportsService {
   static const double pesoAnonimo = 0.34; // ~3 anônimos = 1 cadastrado
   static const double limiarEfetivacao = 1.0; // vira 'ativo'
   static const double limiarArquivamento = 1.0;
-  static const double raioJuncaoMetros = 10.0; // pins mais próximos que isso se juntam
+  static const double raioJuncaoMetros = 5.0; // pins mais próximos se juntam
+
+  // ─── Verificação automática ───────────────────────────────────
+  static const int minConfirmaVerificado = 3; // 3+ confirmações
+  static const int maxContestaVerificado = 0; // e ZERO contestações
 
   // ─── Status possíveis ─────────────────────────────────────────
   static const statusPendente = 'pendente';
@@ -21,14 +25,27 @@ class ReportsService {
   double _peso(bool ehCadastrado) =>
       ehCadastrado ? pesoCadastrado : pesoAnonimo;
 
+  /// Regra de status a partir das credibilidades.
+  String _calcularStatus(double confirma, double contesta) {
+    if (contesta >= limiarArquivamento && contesta >= confirma) {
+      return statusArquivado;
+    }
+    if (confirma >= limiarEfetivacao) return statusAtivo;
+    return statusPendente;
+  }
+
+  /// Um pin é verificado automaticamente com 3+ confirmações e 0 contestações.
+  bool _calcularVerificado(int totalConfirma, int totalContesta) {
+    return totalConfirma >= minConfirmaVerificado &&
+        totalContesta <= maxContestaVerificado;
+  }
+
   /// Procura um pin da MESMA categoria dentro do raio de junção.
-  /// Retorna o documento encontrado ou null.
   Future<QueryDocumentSnapshot?> _buscarPinParecido({
     required double lat,
     required double lng,
     required String categoria,
   }) async {
-    // Busca pins da mesma categoria que não estejam arquivados.
     final snap = await _db
         .collection('pins')
         .where('categoria', isEqualTo: categoria)
@@ -50,11 +67,9 @@ class ReportsService {
   }
 
   /// Cria um pin novo OU, se houver pin parecido por perto,
-  /// registra o report como uma confirmação daquele pin.
+  /// registra o report como confirmação daquele pin.
   ///
-  /// Retorna um mapa com:
-  ///   'juntado': bool  — true se foi somado a um pin existente
-  ///   'pinId': String  — o id do pin criado ou reforçado
+  /// Retorna: { 'juntado': bool, 'pinId': String }
   Future<Map<String, dynamic>> criarOuJuntarPin({
     required String pinId,
     required double lat,
@@ -75,7 +90,6 @@ class ReportsService {
     );
 
     if (parecido != null) {
-      // Junta: registra como confirmação do pin existente
       await votar(
         pinId: parecido.id,
         uid: criadoPor,
@@ -99,34 +113,40 @@ class ReportsService {
       'criadoPor': criadoPor,
       'criadoEm': FieldValue.serverTimestamp(),
 
-      // credibilidade — o criador já conta como primeira confirmação
+      // credibilidade — o criador conta como primeira confirmação
       'credibilidadeConfirma': peso,
       'credibilidadeContesta': 0.0,
       'totalConfirma': 1,
       'totalContesta': 0,
       'status': status,
 
-      // verificação (manual por ora; gancho para IA depois)
+      // verificação automática (1 confirmação ainda não basta)
       'verificado': false,
-      'verificadoPor': null,
     });
 
-    // registra o voto do criador na subcoleção
+    // registra o voto do criador
     await _db
         .collection('pins')
         .doc(pinId)
         .collection('votos')
         .doc(criadoPor)
         .set({
+          'uid': criadoPor,
           'tipo': 'confirma',
           'peso': peso,
           'em': FieldValue.serverTimestamp(),
         });
 
+    // contadores do usuário
+    await _db.collection('usuarios').doc(criadoPor).set({
+      'reports': FieldValue.increment(1),
+      'confirmacoes': FieldValue.increment(1),
+    }, SetOptions(merge: true));
+
     return {'juntado': false, 'pinId': pinId};
   }
 
-  /// Registra (ou troca) o voto de um usuário em um pin.
+  /// Registra, troca ou desfaz o voto de um usuário em um pin.
   /// tipo: 'confirma' | 'contesta'
   Future<void> votar({
     required String pinId,
@@ -136,6 +156,7 @@ class ReportsService {
   }) async {
     final pinRef = _db.collection('pins').doc(pinId);
     final votoRef = pinRef.collection('votos').doc(uid);
+    final userRef = _db.collection('usuarios').doc(uid);
     final peso = _peso(ehCadastrado);
 
     await _db.runTransaction((tx) async {
@@ -150,13 +171,13 @@ class ReportsService {
       int totalConfirma = (dados['totalConfirma'] ?? 0);
       int totalContesta = (dados['totalContesta'] ?? 0);
 
-      // Se já votou antes, remove o voto anterior primeiro
+      // ─── Já votou antes? ───────────────────────────────────
       if (votoSnap.exists) {
         final anterior = votoSnap.data() as Map<String, dynamic>;
         final tipoAnterior = anterior['tipo'];
         final pesoAnterior = (anterior['peso'] ?? 0).toDouble();
 
-        // Votou igual de novo → desfaz o voto (toggle)
+        // Mesmo voto de novo → DESFAZ (toggle)
         if (tipoAnterior == tipo) {
           if (tipo == 'confirma') {
             confirma -= pesoAnterior;
@@ -165,14 +186,24 @@ class ReportsService {
             contesta -= pesoAnterior;
             totalContesta -= 1;
           }
+          if (confirma < 0) confirma = 0;
+          if (contesta < 0) contesta = 0;
+          if (totalConfirma < 0) totalConfirma = 0;
+          if (totalContesta < 0) totalContesta = 0;
+
           tx.delete(votoRef);
           tx.update(pinRef, {
-            'credibilidadeConfirma': confirma < 0 ? 0.0 : confirma,
-            'credibilidadeContesta': contesta < 0 ? 0.0 : contesta,
-            'totalConfirma': totalConfirma < 0 ? 0 : totalConfirma,
-            'totalContesta': totalContesta < 0 ? 0 : totalContesta,
+            'credibilidadeConfirma': confirma,
+            'credibilidadeContesta': contesta,
+            'totalConfirma': totalConfirma,
+            'totalContesta': totalContesta,
             'status': _calcularStatus(confirma, contesta),
+            'verificado': _calcularVerificado(totalConfirma, totalContesta),
           });
+          tx.set(userRef, {
+            tipo == 'confirma' ? 'confirmacoes' : 'contestacoes':
+                FieldValue.increment(-1),
+          }, SetOptions(merge: true));
           return;
         }
 
@@ -186,7 +217,7 @@ class ReportsService {
         }
       }
 
-      // Aplica o novo voto
+      // ─── Aplica o novo voto ────────────────────────────────
       if (tipo == 'confirma') {
         confirma += peso;
         totalConfirma += 1;
@@ -197,8 +228,11 @@ class ReportsService {
 
       if (confirma < 0) confirma = 0;
       if (contesta < 0) contesta = 0;
+      if (totalConfirma < 0) totalConfirma = 0;
+      if (totalContesta < 0) totalContesta = 0;
 
       tx.set(votoRef, {
+        'uid': uid,
         'tipo': tipo,
         'peso': peso,
         'em': FieldValue.serverTimestamp(),
@@ -207,21 +241,26 @@ class ReportsService {
       tx.update(pinRef, {
         'credibilidadeConfirma': confirma,
         'credibilidadeContesta': contesta,
-        'totalConfirma': totalConfirma < 0 ? 0 : totalConfirma,
-        'totalContesta': totalContesta < 0 ? 0 : totalContesta,
+        'totalConfirma': totalConfirma,
+        'totalContesta': totalContesta,
         'status': _calcularStatus(confirma, contesta),
+        'verificado': _calcularVerificado(totalConfirma, totalContesta),
       });
-    });
-  }
 
-  /// Regra de status a partir das credibilidades.
-  String _calcularStatus(double confirma, double contesta) {
-    // Arquivado: contestações alcançaram/superaram as confirmações
-    if (contesta >= limiarArquivamento && contesta >= confirma) {
-      return statusArquivado;
-    }
-    if (confirma >= limiarEfetivacao) return statusAtivo;
-    return statusPendente;
+      // ─── Contadores do usuário ─────────────────────────────
+      final Map<String, dynamic> deltas = {};
+      if (votoSnap.exists) {
+        final tipoAnterior = (votoSnap.data() as Map<String, dynamic>)['tipo'];
+        if (tipoAnterior != tipo) {
+          deltas[tipoAnterior == 'confirma' ? 'confirmacoes' : 'contestacoes'] =
+              FieldValue.increment(-1);
+        }
+      }
+      deltas[tipo == 'confirma' ? 'confirmacoes' : 'contestacoes'] =
+          FieldValue.increment(1);
+
+      tx.set(userRef, deltas, SetOptions(merge: true));
+    });
   }
 
   /// Busca o voto atual do usuário em um pin (null se não votou).
@@ -236,7 +275,19 @@ class ReportsService {
     return (snap.data() as Map<String, dynamic>)['tipo'] as String?;
   }
 
-  /// Stream dos pins visíveis no mapa (ativos e pendentes; arquivados somem).
+  /// Estatísticas do usuário para a tela de perfil.
+  /// Leitura direta de um documento — não precisa de índice.
+  Future<Map<String, int>> estatisticasUsuario(String uid) async {
+    final snap = await _db.collection('usuarios').doc(uid).get();
+    final dados = snap.data() ?? {};
+    return {
+      'reports': (dados['reports'] ?? 0) as int,
+      'confirmacoes': (dados['confirmacoes'] ?? 0) as int,
+      'contestacoes': (dados['contestacoes'] ?? 0) as int,
+    };
+  }
+
+  /// Stream dos pins visíveis no mapa (arquivados não aparecem).
   Stream<QuerySnapshot> streamPins() {
     return _db
         .collection('pins')
