@@ -359,27 +359,49 @@ class _MapaScreenState extends State<MapaScreen> {
         },
       ),
 
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          setState(() {
-            _selecionandoLocalReport = !_selecionandoLocalReport;
-          });
-        },
-        backgroundColor: _selecionandoLocalReport
-            ? const Color(0xFFD85A30)
-            : const Color(0xFF0E5FB5),
-        icon: Icon(
-          _selecionandoLocalReport ? Icons.touch_app : Icons.add_location_alt,
-          color: Colors.white,
-        ),
-        label: Text(
-          _selecionandoLocalReport ? 'Toque no local' : 'Reportar',
-          style: const TextStyle(
-            fontFamily: 'Poppins',
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // Botão: ir para minha localização
+          FloatingActionButton(
+            heroTag: 'btnLocalizacao',
+            mini: true,
+            backgroundColor: Colors.white,
+            onPressed: _permissaoLocalizacaoConcedida
+                ? _moverParaLocalizacaoAtual
+                : _pedirPermissaoGPS,
+            child: const Icon(Icons.my_location, color: Color(0xFF0E5FB5)),
           ),
-        ),
+          const SizedBox(height: 12),
+
+          // Botão: reportar (o que já existia)
+          FloatingActionButton.extended(
+            heroTag: 'btnReportar',
+            onPressed: () {
+              setState(() {
+                _selecionandoLocalReport = !_selecionandoLocalReport;
+              });
+            },
+            backgroundColor: _selecionandoLocalReport
+                ? const Color(0xFFD85A30)
+                : const Color(0xFF0E5FB5),
+            icon: Icon(
+              _selecionandoLocalReport
+                  ? Icons.touch_app
+                  : Icons.add_location_alt,
+              color: Colors.white,
+            ),
+            label: Text(
+              _selecionandoLocalReport ? 'Toque no local' : 'Reportar',
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
 
       bottomNavigationBar: BottomNavigationBar(
