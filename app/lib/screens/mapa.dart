@@ -22,6 +22,10 @@ class _MapaScreenState extends State<MapaScreen> {
   bool _permissaoLocalizacaoConcedida = false;
   bool _selecionandoLocalReport = false;
 
+  MapType _tipoMapaAtual = MapType.normal;
+  bool _trafegoAtivado = false;
+  bool _menuTipoMapaAberto = false;
+
   final LatLng _posicaoInicial = const LatLng(-15.7633, -47.8702);
   static CameraPosition? _ultimaPosicaoSalva;
 
@@ -182,6 +186,26 @@ class _MapaScreenState extends State<MapaScreen> {
     });
   }
 
+  void _selecionarTipoMapa(String tipo) {
+    setState(() {
+      switch (tipo) {
+        case 'padrao':
+          _tipoMapaAtual = MapType.normal;
+          _trafegoAtivado = false;
+          break;
+        case 'satelite':
+          _tipoMapaAtual = MapType.hybrid; // hybrid = satélite com nomes de ruas
+          _trafegoAtivado = false;
+          break;
+        case 'transito':
+          _tipoMapaAtual = MapType.normal;
+          _trafegoAtivado = true;
+          break;
+      }
+      _menuTipoMapaAberto = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -206,6 +230,8 @@ class _MapaScreenState extends State<MapaScreen> {
                     CameraPosition(target: _posicaoInicial, zoom: 17.5),
                 onCameraMove: (pos) => _ultimaPosicaoSalva = pos,
                 markers: marcadores,
+                mapType: _tipoMapaAtual,
+                trafficEnabled: _trafegoAtivado,
                 myLocationEnabled: _permissaoLocalizacaoConcedida,
                 myLocationButtonEnabled: false,
                 zoomControlsEnabled: false,
@@ -224,6 +250,8 @@ class _MapaScreenState extends State<MapaScreen> {
                   }
                 },
               ),
+
+              
 
               // Barra de busca + resultados
               SafeArea(
@@ -352,6 +380,96 @@ class _MapaScreenState extends State<MapaScreen> {
                         ),
                     ],
                   ),
+                ),
+              ),
+
+              // Alterar
+              Positioned(
+                left: 16,
+                bottom: 32,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Opções com animação de abrir/fechar
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 200),
+                        opacity: _menuTipoMapaAberto ? 1.0 : 0.0,
+                        child: _menuTipoMapaAberto
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _opcaoTipoMapa(
+                                    label: 'Padrão',
+                                    icon: Icons.map_outlined,
+                                    selecionado:
+                                        _tipoMapaAtual == MapType.normal && !_trafegoAtivado,
+                                    onTap: () => _selecionarTipoMapa('padrao'),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _opcaoTipoMapa(
+                                    label: 'Satélite',
+                                    icon: Icons.satellite_alt_outlined,
+                                    selecionado: _tipoMapaAtual == MapType.hybrid,
+                                    onTap: () => _selecionarTipoMapa('satelite'),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _opcaoTipoMapa(
+                                    label: 'Trânsito',
+                                    icon: Icons.traffic_outlined,
+                                    selecionado: _trafegoAtivado,
+                                    onTap: () => _selecionarTipoMapa('transito'),
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ),
+
+                    // Botão principal (sem mudança)
+                    Material(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25),
+                      elevation: 4,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(25),
+                        onTap: () {
+                          setState(() => _menuTipoMapaAberto = !_menuTipoMapaAberto);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.layers_outlined, color: Color(0xFF0E5FB5)),
+                              const SizedBox(width: 8),
+                              const Text(
+                                '',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1A1A1A),
+                                ),
+                              ),
+                              AnimatedRotation(
+                                duration: const Duration(milliseconds: 250),
+                                turns: _menuTipoMapaAberto ? 0.5 : 0.0,
+                                child: const Icon(
+                                  Icons.keyboard_arrow_up,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -811,6 +929,45 @@ class _MapaScreenState extends State<MapaScreen> {
   }
 }
 
+  Widget _opcaoTipoMapa({
+    required String label,
+    required IconData icon,
+    required bool selecionado,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: selecionado ? const Color(0xFF0E5FB5) : Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      elevation: 3,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: selecionado ? Colors.white : const Color(0xFF0E5FB5),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  color: selecionado ? Colors.white : Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 // ══════════════════════════════════════════════════════════════════
 //  VISUALIZADOR DE FOTO EM TELA CHEIA (com zoom)
 // ══════════════════════════════════════════════════════════════════
