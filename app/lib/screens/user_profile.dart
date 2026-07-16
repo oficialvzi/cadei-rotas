@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cadeirotas_app/core/services/auth_service.dart';
 import 'package:cadeirotas_app/core/services/reports_service.dart';
+import 'package:cadeirotas_app/screens/instruction_slides.dart';
 
 class TelaDePerfil extends StatelessWidget {
   const TelaDePerfil({super.key});
@@ -44,13 +45,36 @@ class TelaDePerfil extends StatelessWidget {
         children: [
           // CAIXA AZUL DO TOPO
           Container(
-            width: double.infinity,
-            color: const Color(0xFF003366),
-            padding: const EdgeInsets.only(top: 80, bottom: 30),
-            child: Column(
-              children: [
-                CircleAvatar(
-                  radius: 50,
+  width: double.infinity,
+  color: const Color(0xFF003366),
+  padding: const EdgeInsets.only(top: 40, bottom: 30),
+  child: Column(
+    children: [
+
+      Align(
+        alignment: Alignment.topRight,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: IconButton(
+            icon: const Icon(
+              Icons.help_outline,
+              color: Colors.white,
+            ),
+            tooltip: 'Instruções',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const TelaDeInstrucoes(),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+
+      CircleAvatar(
+        radius: 50,
                   backgroundColor: Colors.white,
                   backgroundImage: fotoUrl != null
                       ? NetworkImage(fotoUrl)

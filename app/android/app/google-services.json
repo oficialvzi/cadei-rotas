@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "837512954782-ebsgvu2k04ni0678cv9uk8ofai40786n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cadeirotas_app",
+            "certificate_hash": "911d23c3f2f1d90f6329124708e54bb99269dce0"
+          }
+        },
+        {
           "client_id": "837512954782-n3slj2oopq7ooqjclcdcr46tqa2bd235.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
