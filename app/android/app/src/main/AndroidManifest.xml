@@ -14,9 +14,9 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"/>
         </provider>
-        android:label="cadeirotas_app"
+        android:label="Cadeirotas"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/launcher_icon"
         <activity
             android:name=".MainActivity"
             android:exported="true"
