@@ -24,7 +24,7 @@ Yago de Oliveira Araújo - 251032138
 
 **Landing page:** [oficialvzi.github.io/cadei-rotas](https://oficialvzi.github.io/cadei-rotas/)
 
-**Vídeo demonstrativo:** *[em processo]*
+**Vídeo demonstrativo:** [link vídeo](https://youtube.com/shorts/LU-XSG-91HM?feature=share)
 
 ---
 
@@ -134,7 +134,7 @@ A solução final mantém a arquitetura Cliente-Servidor em camadas:
 | Código-fonte no repositório | Concluído e atualizado |
 | Documentação técnica (PC1, PC2, PC3) | Concluída |
 | Landing page do produto | Concluída — [link](https://oficialvzi.github.io/cadei-rotas/) |
-| Vídeo demonstrativo | *[em processo]* |
+| Vídeo demonstrativo | [link](https://youtube.com/shorts/LU-XSG-91HM?feature=share) |
 
 
 ---
